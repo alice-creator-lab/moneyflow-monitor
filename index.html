@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>賽馬熱錢流 · Phase 0</title>
-<link rel="stylesheet" href="static/style.css?v=1793610002">
+<link rel="stylesheet" href="static/style.css?v=1793610472">
 </head>
 <body>
 <header class="topbar">
@@ -38,19 +38,29 @@
     <div class="card-head">
       <h3 id="dist-title">即時熱錢分佈</h3>
       <div class="legend" id="dist-legend">
-        <span><i style="background:#4aa3ff"></i>獨贏</span>
-        <span><i style="background:#35d0a5"></i>位置</span>
-        <span><i style="background:#f0c674"></i>連贏</span>
-        <span><i style="background:#b06cff"></i>位置Q</span>
-        <span><i style="background:#5ad1d8"></i>二重彩</span>
-        <span><i style="background:#ff8f5d"></i>單T</span>
-        <span><i style="background:#8fd98f"></i>四連環</span>
-        <span><i style="background:#e2e07a"></i>四重彩</span>
-        <span><i style="background:#9a9aa8"></i>多場</span>
+        <span><i style="background:#3f7fbf"></i>T-15 前累積</span>
+        <span><i style="background:#f5a524"></i>最後 15 分鐘每分鐘新增</span>
+        <span class="dist-meta">只計獨贏彩池</span>
       </div>
     </div>
     <div id="dist-chart" class="dist-chart"><div class="empty">等緊開售數據…</div></div>
     <div class="dist-notes" id="dist-notes"></div>
+  </section>
+
+  <section class="card basics-card">
+    <div class="card-head">
+      <h3>馬匹基本分析 <span class="dist-meta" id="basics-meta"></span></h3>
+      <div class="legend"><span>檔位／負磅／評分／近六仗／配備／騎練，加資金側訊號</span></div>
+    </div>
+    <div class="tbl-wrap">
+      <table class="runners" id="basics">
+        <thead><tr>
+          <th>#</th><th>馬匹</th><th class="num">檔</th><th class="num">磅</th><th class="num">分</th>
+          <th>近六仗</th><th>配備</th><th>騎師</th><th>練馬師</th><th>訊號</th>
+        </tr></thead>
+        <tbody></tbody>
+      </table>
+    </div>
   </section>
 
   <section class="card blocks-card">
@@ -111,10 +121,10 @@
   <footer>
     <p>資料：香港賽馬會公開賠率／投注額（唯讀、被動記錄）。本頁只供個人研究，非投注建議，不得轉載或轉售。</p>
     <p class="mono" id="boot"></p>
-<p class="mono">靜態快照 2026-11-02T17:00:02+08:00 · 由本機 collector 產生</p>
+<p class="mono">靜態快照 2026-11-02T17:07:52+08:00 · 由本機 collector 產生</p>
   </footer>
 </main>
 <script src="data.js"></script>
-<script src="static/app.js?v=1793610002"></script>
+<script src="static/app.js?v=1793610472"></script>
 </body>
 </html>

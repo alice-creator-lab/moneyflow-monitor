@@ -106,6 +106,7 @@ function render() {
   renderRaces();
   renderChart();
   renderDist();
+  renderBasics();
   renderBlocks();
   renderSpectrum();
   renderHot();
@@ -243,6 +244,48 @@ function renderChart() {
   box.innerHTML = `<svg viewBox="0 0 ${W} ${H}" preserveAspectRatio="none">${grid}${paths}${tl}</svg>`;
 }
 
+/* ---------------------------------------------------------- horse basics */
+function renderBasics() {
+  const tbody = $('#basics tbody');
+  const race = currentRace();
+  const meta = $('#basics-meta');
+  if (!tbody) return;
+  const rs = (race?.runners || []).slice().sort((a, b) => a.no - b.no);
+  if (!rs.length) { tbody.innerHTML = '<tr><td colspan="10" class="empty">未有排位</td></tr>'; return; }
+  const maxW = Math.max(...rs.map((r) => r.weight || 0));
+  const minW = Math.min(...rs.filter((r) => r.weight).map((r) => r.weight));
+  const wf = race?.winflow;
+  const byNo = new Map((wf?.horses || []).map((h) => [h.no, h]));
+  if (meta) meta.textContent = `R${race.no} · ${rs.length} 匹 · 跑 ${race.distance || ''}m`;
+
+  tbody.innerHTML = rs.map((r) => {
+    const f = byNo.get(r.no) || {};
+    const l6 = String(r.last6 || '').trim();
+    const l6html = l6 ? l6.split(/[\s,，-]+/).filter(Boolean).slice(0, 6)
+      .map((x) => `<span class="l6 ${x === '1' ? 'w' : ''}">${x}</span>`).join('') : '<span class="muted">—</span>';
+    const firstGear = /1$/.test(String(r.gear || '').replace(/[^A-Za-z0-9]/g, ''));
+    const tags = [];
+    if (firstGear) tags.push('<span class="tag">首戴</span>');
+    if (r.draw && r.draw <= 3) tags.push('<span class="tag ok">內檔</span>');
+    if (r.weight && r.weight === maxW && rs.length > 2) tags.push('<span class="tag">重磅</span>');
+    if (r.ov_odds && r.odds && r.odds < r.ov_odds * 0.85) tags.push('<span class="tag up">隔夜落飛</span>');
+    if (r.hot) tags.push('<span class="tag">大熱</span>');
+    if (f.delta_pct >= 8) tags.push('<span class="tag up">5分鐘 +' + f.delta_pct.toFixed(0) + '%</span>');
+    return `<tr>
+      <td class="muted">${r.no}</td>
+      <td>${r.name || ''}<span class="muted">${r.name_en ? ' · ' + r.name_en.slice(0, 18) : ''}</span></td>
+      <td class="num">${r.draw ?? '—'}</td>
+      <td class="num">${r.weight ?? '—'}${r.weight === maxW && rs.length > 2 ? '<span class="muted">*</span>' : ''}</td>
+      <td class="num">${r.rating ?? '—'}</td>
+      <td>${l6html}</td>
+      <td class="muted">${r.gear || '—'}</td>
+      <td class="muted">${r.jockey || ''}</td>
+      <td class="muted">${r.trainer || ''}</td>
+      <td>${tags.join(' ') || '<span class="muted">—</span>'}</td>
+    </tr>`;
+  }).join('');
+}
+
 /* ------------------------------------------------------------ block trades */
 function renderBlocks() {
   const box = $('#blocks');
@@ -265,86 +308,81 @@ function renderBlocks() {
 }
 
 /* ------------------------------------------------------- money distribution */
-const SEG = [
-  ['win', '#4aa3ff', 'WIN'],
-  ['pla', '#35d0a5', 'PLA'],
-  ['qin', '#f0c674', 'QIN'],
-  ['qpl', '#b06cff', 'QPL'],
-  ['fct', '#5ad1d8', 'FCT'],
-  ['tri', '#ff8f5d', 'TRI'],
-  ['ff', '#8fd98f', 'FF'],
-  ['tce', '#e2e07a', 'TCE'],
-  ['multi', '#9a9aa8', '孖/多場'],
-];
+const EARLY_COLOR = '#3f7fbf';   // money already in before T-15
+const LATE_COLOR = '#f5a524';    // money added inside the last 15 minutes
 
 function renderDist() {
   const box = $('#dist-chart');
   const race = currentRace();
-  const d = race?.dist;
-  if (!d || !d.horses || !d.horses.length || !d.total) {
+  const w = race?.winflow;
+  if (!w || !w.horses || !w.horses.length || !w.total) {
     $('#dist-title').textContent = '即時熱錢分佈';
     box.innerHTML = '<div class="empty">未開售 — 未有資金分佈</div>';
     return;
   }
-  const title = `R${race.no} 即時熱錢分佈 <b>${nf.format(Math.round(d.total))}</b>`;
-  const since = d.since ? `<span class="dist-meta">對比 ${hhmm(d.since)}</span>` : '';
-  $('#dist-title').innerHTML = title + since;
+  const lateShare = w.total ? w.late_total / w.total * 100 : 0;
+  $('#dist-title').innerHTML =
+    `R${race.no} 獨贏熱錢分佈 <b>${nf.format(w.total)}</b>` +
+    `<span class="dist-meta">T-15 後新增 ${big(w.late_total)}（${lateShare.toFixed(0)}%）· 每 1 分鐘更新</span>`;
 
-  const max = Math.max(...d.horses.map((h) => h.total), 1);
+  const max = Math.max(...w.horses.map((h) => h.stake), 1);
   const H = 240;
-  const rank = new Map(d.horses.map((h, i) => [h.no, i]));
-  renderDistNotes(d);
+  const rank = new Map(w.horses.map((h, i) => [h.no, i]));
+  const lates = w.horses.map((h) => h.late).sort((x, y) => x - y);
+  const medLate = lates[Math.floor(lates.length / 2)] || 0;
+  renderDistNotes(w);
   box.innerHTML = '';
-  d.horses.forEach((h) => {
+  w.horses.forEach((h) => {
     const col = el('div', 'dcol');
-    const segs = SEG.map(([k, color, label]) => {
-      const v = h[k] || 0;
+    const segs = [
+      [h.base, EARLY_COLOR, 'T-15 前'],
+      [h.late, LATE_COLOR, '最後 15 分鐘新增'],
+    ].map(([v, color, label]) => {
       if (!v) return '';
       const px = Math.max(1, (v / max) * H);
       return `<i style="height:${px.toFixed(1)}px;background:${color}" title="${label} HK$${nf.format(Math.round(v))}"></i>`;
     }).join('');
     const r = rank.get(h.no);
-    const cls = h.ratio && h.ratio >= 1.4 ? 'hot'
-      : h.ratio && h.ratio <= 0.7 ? 'cool'
-        : r < 3 ? 'warm' : 'cool';
-    const dv = h.delta;
-    const dl = dv === null || dv === undefined ? '' :
-      `<div class="dl ${dv >= 0 ? 'up' : 'down'}">${dv >= 0 ? '+' : ''}${big(Math.abs(dv))}</div>`;
+    const lateHot = h.late > 0 && h.late_pct >= 15 && h.late >= Math.max(1, medLate) * 1.6;
+    const cls = lateHot ? 'hot' : r < 3 ? 'warm' : 'cool';
+    const dp = h.delta_pct;
+    const dl = dp === null || dp === undefined ? ''
+      : `<div class="dl ${dp >= 0 ? 'up' : 'down'}">${dp >= 0 ? '+' : ''}${dp.toFixed(1)}%</div>`;
     col.innerHTML = `
       <div class="badge ${cls}">${h.no}</div>
       <div class="barwrap" style="height:${H}px">
         <div class="stack" style="height:${H}px">${segs}</div>
-        <div class="tick" style="bottom:${tickH(h, d, max, H)}px" title="賠率隱含水平 ${h.expected ?? '—'}%"></div>
       </div>
-      <div class="amt">${big(h.total)}</div>
-      <div class="od">${h.odds ? h.odds.toFixed(1) : '—'}</div>
+      <div class="amt">${big(h.stake)}</div>
+      <div class="od">${h.late ? `<span style="color:${LATE_COLOR}">+${big(h.late)}</span>` : ''}</div>
       ${dl}`;
-    col.title = `${h.no} ${h.name || ''} ${h.jockey || ''}\n` +
-      `WIN ${money(h.win)} · PLA ${money(h.pla)}\n` +
-      `QIN ${money(h.qin)} · QPL ${money(h.qpl)}\n` +
-      `FCT ${money(h.fct)} · TRI ${money(h.tri)} · FF ${money(h.ff)}\n` +
-      `TCE ${money(h.tce)} · 多場 ${money(h.multi)}\n` +
-      `合計 ${money(h.total)}（${pct(h.share)}）`;
+    col.title = `${h.no} ${race.runners?.find((x) => x.no === h.no)?.name || ''}\n` +
+      `獨贏資金 ${money(h.stake)}（佔池 ${h.share}%）\n` +
+      `T-15 前 ${money(h.base)} · 最後 15 分鐘 +${money(h.late)}（${h.late_pct}%）\n` +
+      `對比 5 分鐘前 ${dp === null ? '—' : (dp >= 0 ? '+' : '') + dp + '%'}（份額 ${h.share_prev ?? '—'}% → ${h.share}%）`;
     box.appendChild(col);
   });
 }
 
-function tickH(h, d, max, H) {
-  if (!h.expected) return 0;
-  return Math.min(H, (h.expected / 100) * d.total / max * H);
+function median(vals) {
+  const s = [...vals].sort((x, y) => x - y);
+  return s.length ? s[Math.floor(s.length / 2)] : 0;
 }
 
-function renderDistNotes(d) {
+function renderDistNotes(w) {
   const box = $('#dist-notes');
   if (!box) return;
-  const hot = d.horses.filter((h) => h.ratio >= 1.4).sort((x, y) => y.ratio - x.ratio).slice(0, 4);
-  const cold = d.horses.filter((h) => h.ratio && h.ratio <= 0.7).sort((x, y) => x.ratio - y.ratio).slice(0, 3);
   const bits = [];
-  if (hot.length) {
-    bits.push(`<span>異常偏熱（錢多過賠率應得）：${hot.map((h) => `<b>${h.no} 號 ×${h.ratio}</b>`).join('、')}</span>`);
+  const rank = [...w.horses].filter((h) => h.late > 0).sort((x, y) => y.late - x.late).slice(0, 3);
+  if (rank.length) {
+    bits.push(`<span>最後 15 分鐘熱錢榜：${rank.map((h) => `<b>${h.no} 號 +${big(h.late)}（${h.late_pct}%）</b>`).join('、')}</span>`);
+  } else {
+    bits.push('<span>最後 15 分鐘熱錢榜：暫時未有新增（未到 T-15）</span>');
   }
-  if (cold.length) {
-    bits.push(`<span>大熱不穩（錢少過賠率應得）：${cold.map((h) => `<b>${h.no} 號 ×${h.ratio}</b>`).join('、')}</span>`);
+  const jump = [...w.horses].filter((h) => h.delta_pct !== null && h.delta_pct !== undefined)
+    .sort((x, y) => y.delta_pct - x.delta_pct)[0];
+  if (jump && jump.delta_pct > 0) {
+    bits.push(`<span>5 分鐘最大升幅：<b>${jump.no} 號 +${jump.delta_pct.toFixed(1)}%</b></span>`);
   }
   const race = currentRace();
   const ov = race?.overnight;
@@ -355,19 +393,24 @@ function renderDistNotes(d) {
   } else {
     bits.push('<span>隔夜飛：未捕捉（賽日 09:00 前會自動記一次基準）</span>');
   }
-  bits.push('<span>×1.00 = 資金份額同賠率隱含機率一致；≥1.4 或 ≤0.7 才算異常</span>');
+  bits.push(`<span><i style="display:inline-block;width:9px;height:9px;background:${EARLY_COLOR};border-radius:2px"></i> T-15 前累積 ·
+    <i style="display:inline-block;width:9px;height:9px;background:${LATE_COLOR};border-radius:2px"></i> 最後 15 分鐘每分鐘新增 ·
+    Δ% = 對比 5 分鐘前</span>`);
   box.innerHTML = bits.join('');
 }
 
 function renderSpectrum() {
   const tbl = $('#spec-table');
   const race = currentRace();
-  const sp = race?.spectrum;
+  const w = race?.winflow;
+  const sp = (w && w.spark && w.spark.length)
+    ? { buckets: w.spark, horses: (race?.runners || []).map((r) => r.no), spikes: w.spikes || [] }
+    : race?.spectrum;
   const meta = $('#spec-meta');
   if (!tbl) return;
   if (!sp || !sp.buckets || !sp.buckets.length) {
     tbl.innerHTML = '';
-    if (meta) meta.textContent = '未夠時間累積頻譜（每 2 分鐘一格）';
+    if (meta) meta.textContent = '未夠時間累積頻譜（每分鐘一格）';
     return;
   }
   const nos = sp.horses;
@@ -397,7 +440,7 @@ function renderSpectrum() {
   tbl.innerHTML = html;
   if (meta) {
     const sp2 = (sp.spikes || []).length;
-    meta.textContent = `每格 = 該馬在該 2 分鐘的資金份額；黃框 = 一點紅（≥20% 且係自身中位數 1.8 倍以上）${sp2 ? `，暫見 ${sp2} 個` : ''}`;
+    meta.textContent = `每格 = 該馬在該分鐘的獨贏資金份額；黃框 = 一點紅（高過自身中位數 1.5 倍且高過公平份額）${sp2 ? `，暫見 ${sp2} 個` : ''}`;
   }
 }
 
