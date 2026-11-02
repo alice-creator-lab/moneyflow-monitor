@@ -245,6 +245,18 @@ function renderChart() {
 }
 
 /* ---------------------------------------------------------- horse basics */
+function lastStartCell(ls) {
+  if (!ls || !ls.date) return '<span class="muted">—</span>';
+  const fin = ls.finish ? `名次 ${ls.finish}` : '名次 —';
+  const sp = ls.odds ? `開跑 ${ls.odds.toFixed(1)}` : '開跑 —';
+  const t5 = (ls.t5 && ls.close)
+    ? `<div class="l5">最後5分鐘 ${ls.t5.toFixed(1)} → ${ls.close.toFixed(1)}` +
+      `${ls.close < ls.t5 ? ' <span class="up">落飛</span>' : ls.close > ls.t5 ? ' <span class="down">回飛</span>' : ''}</div>`
+    : '';
+  return `<div class="ls">${ls.date.slice(5)} · R${ls.race} · ${fin}</div>
+    <div class="ls2">${sp} 倍</div>${t5}`;
+}
+
 function renderBasics() {
   const tbody = $('#basics tbody');
   const race = currentRace();
@@ -279,6 +291,7 @@ function renderBasics() {
       <td class="num">${r.weight ?? '—'}${heavyUnique && r.weight === maxW ? '<span class="muted">*</span>' : ''}</td>
       <td class="num">${r.rating ?? '—'}</td>
       <td>${l6html}</td>
+      <td>${lastStartCell(r.last_start)}</td>
       <td class="muted">${r.gear || '—'}</td>
       <td class="muted">${r.jockey || ''}</td>
       <td class="muted">${r.trainer || ''}</td>
