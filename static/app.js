@@ -290,7 +290,10 @@ function renderDist() {
       `<div class="dl ${dv >= 0 ? 'up' : 'down'}">${dv >= 0 ? '+' : ''}${big(Math.abs(dv))}</div>`;
     col.innerHTML = `
       <div class="badge ${cls}">${h.no}</div>
-      <div class="stack" style="height:${H}px">${segs}</div>
+      <div class="barwrap" style="height:${H}px">
+        <div class="stack" style="height:${H}px">${segs}</div>
+        <div class="tick" style="bottom:${tickH(h, d, max, H)}px" title="賠率隱含水平 ${h.expected ?? '—'}%"></div>
+      </div>
       <div class="amt">${big(h.total)}</div>
       <div class="od">${h.odds ? h.odds.toFixed(1) : '—'}</div>
       ${dl}`;
@@ -302,6 +305,11 @@ function renderDist() {
       `合計 ${money(h.total)}（${pct(h.share)}）`;
     box.appendChild(col);
   });
+}
+
+function tickH(h, d, max, H) {
+  if (!h.expected) return 0;
+  return Math.min(H, (h.expected / 100) * d.total / max * H);
 }
 
 function renderDistNotes(d) {
@@ -336,7 +344,8 @@ function renderSpectrum() {
   const band = (v) => (v >= 30 ? 'c3' : v >= 20 ? 'c2' : v >= 10 ? 'c1' : 'c0');
   let html = '<thead><tr><th></th>' + nos.map((n) => `<th class="no">${n}</th>`).join('') + '</tr></thead><tbody>';
   sp.buckets.slice().reverse().forEach((b) => {
-    html += `<tr><td class="t">${b.t}</td>`;
+    const mt = b.m === null || b.m === undefined ? '' : (b.m < 0 ? `T${b.m}` : `T+${b.m}`);
+    html += `<tr><td class="t">${b.t} <span style="opacity:.55">${mt}</span></td>`;
     nos.forEach((n) => {
       const v = b.cells[String(n)] || 0;
       const cls = `${band(v)}${spikeSet.has(`${b.t}|${n}`) ? ' spike' : ''}`;

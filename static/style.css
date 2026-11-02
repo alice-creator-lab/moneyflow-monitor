@@ -90,6 +90,10 @@ main { max-width: 1560px; margin: 0 auto; padding: 18px 22px 40px; }
   border-radius: 3px 3px 0 0; overflow: hidden; background: linear-gradient(180deg,#0f1822,#0c141c); }
 .dcol .stack > i { display: block; width: 100%; flex: 0 0 auto; }
 .dcol .stack > i:first-child { border-radius: 0; }
+.dcol .barwrap { position: relative; width: 40px; }
+.dcol .barwrap .stack { position: absolute; left: 0; bottom: 0; }
+.dcol .barwrap .tick { position: absolute; left: -4px; right: -4px; height: 2px;
+  background: #e6eef7aa; border-radius: 1px; }
 .dcol .amt { font-size: 10.5px; color: #b9c9da; margin-top: 4px; font-variant-numeric: tabular-nums; }
 .dcol .no { font-size: 10.5px; color: var(--dim); margin-top: 2px; }
 .dcol .od { font-size: 11px; color: #cfe0f0; font-variant-numeric: tabular-nums; }
