@@ -105,6 +105,7 @@ function render() {
   renderCards();
   renderRaces();
   renderChart();
+  renderDist();
   renderHot();
   renderPools();
   renderRunners();
@@ -238,6 +239,55 @@ function renderChart() {
   }).join('');
 
   box.innerHTML = `<svg viewBox="0 0 ${W} ${H}" preserveAspectRatio="none">${grid}${paths}${tl}</svg>`;
+}
+
+/* ------------------------------------------------------- money distribution */
+const SEG = [
+  ['win', '#4aa3ff'],
+  ['pla', '#35d0a5'],
+  ['qin', '#f0c674'],
+  ['qpl', '#b06cff'],
+];
+
+function renderDist() {
+  const box = $('#dist-chart');
+  const race = currentRace();
+  const d = race?.dist;
+  if (!d || !d.horses || !d.horses.length || !d.total) {
+    $('#dist-title').textContent = '即時熱錢分佈';
+    box.innerHTML = '<div class="empty">未開售 — 未有資金分佈</div>';
+    return;
+  }
+  const title = `R${race.no} 即時熱錢分佈 <b>${nf.format(Math.round(d.total))}</b>`;
+  const since = d.since ? `<span class="dist-meta">對比 ${hhmm(d.since)}</span>` : '';
+  $('#dist-title').innerHTML = title + since;
+
+  const max = Math.max(...d.horses.map((h) => h.total), 1);
+  const H = 220;
+  const rank = new Map(d.horses.map((h, i) => [h.no, i]));
+  box.innerHTML = '';
+  d.horses.forEach((h) => {
+    const col = el('div', 'dcol');
+    const segs = SEG.map(([k, color]) => {
+      const v = h[k] || 0;
+      if (!v) return '';
+      const px = Math.max(1, (v / max) * H);
+      return `<i style="height:${px.toFixed(1)}px;background:${color}" title="${color} HK$${nf.format(Math.round(v))}"></i>`;
+    }).join('');
+    const r = rank.get(h.no);
+    const cls = r < 3 ? 'hot' : r < 6 ? 'warm' : 'cool';
+    const dv = h.delta;
+    const dl = dv === null || dv === undefined ? '' :
+      `<div class="dl ${dv >= 0 ? 'up' : 'down'}">${dv >= 0 ? '+' : ''}${big(Math.abs(dv))}</div>`;
+    col.innerHTML = `
+      <div class="badge ${cls}">${h.no}</div>
+      <div class="stack" style="height:${H}px;justify-content:flex-end">${segs}</div>
+      <div class="amt">${big(h.total)}</div>
+      <div class="od">${h.odds ? h.odds.toFixed(1) : '—'}</div>
+      ${dl}`;
+    col.title = `${h.no} ${h.name || ''} ${h.jockey || ''}\nWIN ${money(h.win)} · PLA ${money(h.pla)}\nQIN ${money(h.qin)} · QPL ${money(h.qpl)}\n合計 ${money(h.total)}（${pct(h.share)}）`;
+    box.appendChild(col);
+  });
 }
 
 /* -------------------------------------------------------------------- hotlist */
