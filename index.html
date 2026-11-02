@@ -1,0 +1,80 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>賽馬熱錢流 · Phase 0</title>
+<link rel="stylesheet" href="static/style.css">
+</head>
+<body>
+<header class="topbar">
+  <div class="brand">
+    <span class="logo">‰</span>
+    <div>
+      <h1>賽馬熱錢流</h1>
+      <p class="sub">Phase 0 · 自用監察</p>
+    </div>
+  </div>
+  <nav id="meetings" class="pills"></nav>
+  <div class="health" id="health">
+    <span class="dot" data-k="collector"></span><span class="lbl">collector</span>
+    <span class="dot" data-k="mqtt"></span><span class="lbl">push</span>
+    <span class="age" id="age">—</span>
+  </div>
+</header>
+
+<main>
+  <section class="cards" id="cards"></section>
+
+  <section class="races">
+    <div class="races-head">
+      <h2 id="meeting-title">—</h2>
+      <div class="meta" id="meeting-meta"></div>
+    </div>
+    <nav id="race-tabs" class="race-tabs"></nav>
+  </section>
+
+  <section class="grid">
+    <div class="col-left">
+      <div class="card chart-card">
+        <div class="card-head">
+          <h3>投注額走勢</h3>
+          <div class="legend" id="legend"></div>
+        </div>
+        <div id="chart" class="chart"><div class="empty">等緊數據…</div></div>
+      </div>
+
+      <div class="card">
+        <div class="card-head"><h3>熱錢榜 <span class="hint">本場 WIN 池隱含資金</span></h3></div>
+        <div id="hotlist" class="hotlist"><div class="empty">未開售</div></div>
+      </div>
+    </div>
+
+    <div class="col-right">
+      <div class="card">
+        <div class="card-head"><h3>彩池</h3><span class="hint" id="pool-count"></span></div>
+        <div class="table-wrap"><table id="pools"><thead>
+          <tr><th>彩池</th><th>場次</th><th class="num">投注額</th><th class="num">Δ</th><th>狀態</th></tr>
+        </thead><tbody></tbody></table></div>
+      </div>
+
+      <div class="card">
+        <div class="card-head"><h3>馬匹</h3><span class="hint" id="runner-count"></span></div>
+        <div class="table-wrap"><table id="runners"><thead>
+          <tr><th>#</th><th>馬</th><th>騎師</th><th class="num">賠率</th><th class="num">位置</th>
+              <th class="num">Δ</th><th class="num">落飛</th><th class="num">資金</th><th class="num">份額</th></tr>
+        </thead><tbody></tbody></table></div>
+      </div>
+    </div>
+  </section>
+
+  <footer>
+    <p>資料：香港賽馬會公開賠率／投注額（唯讀、被動記錄）。本頁只供個人研究，非投注建議，不得轉載或轉售。</p>
+    <p class="mono" id="boot"></p>
+<p class="mono">靜態快照 2026-11-02T12:24:54+08:00 · 由本機 collector 產生</p>
+  </footer>
+</main>
+<script src="data.js"></script>
+<script src="static/app.js"></script>
+</body>
+</html>
