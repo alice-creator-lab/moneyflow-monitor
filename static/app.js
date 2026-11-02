@@ -80,8 +80,10 @@ async function refresh() {
     const s = await api('api/summary');
     state.summary = s;
     if (!state.mid && s.meetings.length) {
+      const want = new URLSearchParams(location.search).get('m');
+      const picked = want ? s.meetings.find((m) => m.id === want) : null;
       const withSale = s.meetings.find((m) => m.sale_open) || null;
-      state.mid = (withSale || s.meetings[s.meetings.length - 1]).id;
+      state.mid = (picked || withSale || s.meetings[s.meetings.length - 1]).id;
     }
     if (state.mid) {
       state.meeting = await api('api/meeting/' + encodeURIComponent(state.mid));
