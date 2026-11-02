@@ -243,10 +243,15 @@ function renderChart() {
 
 /* ------------------------------------------------------- money distribution */
 const SEG = [
-  ['win', '#4aa3ff'],
-  ['pla', '#35d0a5'],
-  ['qin', '#f0c674'],
-  ['qpl', '#b06cff'],
+  ['win', '#4aa3ff', 'WIN'],
+  ['pla', '#35d0a5', 'PLA'],
+  ['qin', '#f0c674', 'QIN'],
+  ['qpl', '#b06cff', 'QPL'],
+  ['fct', '#5ad1d8', 'FCT'],
+  ['tri', '#ff8f5d', 'TRI'],
+  ['ff', '#8fd98f', 'FF'],
+  ['tce', '#e2e07a', 'TCE'],
+  ['multi', '#9a9aa8', '孖/多場'],
 ];
 
 function renderDist() {
@@ -268,11 +273,11 @@ function renderDist() {
   box.innerHTML = '';
   d.horses.forEach((h) => {
     const col = el('div', 'dcol');
-    const segs = SEG.map(([k, color]) => {
+    const segs = SEG.map(([k, color, label]) => {
       const v = h[k] || 0;
       if (!v) return '';
       const px = Math.max(1, (v / max) * H);
-      return `<i style="height:${px.toFixed(1)}px;background:${color}" title="${color} HK$${nf.format(Math.round(v))}"></i>`;
+      return `<i style="height:${px.toFixed(1)}px;background:${color}" title="${label} HK$${nf.format(Math.round(v))}"></i>`;
     }).join('');
     const r = rank.get(h.no);
     const cls = r < 3 ? 'hot' : r < 6 ? 'warm' : 'cool';
@@ -285,7 +290,12 @@ function renderDist() {
       <div class="amt">${big(h.total)}</div>
       <div class="od">${h.odds ? h.odds.toFixed(1) : '—'}</div>
       ${dl}`;
-    col.title = `${h.no} ${h.name || ''} ${h.jockey || ''}\nWIN ${money(h.win)} · PLA ${money(h.pla)}\nQIN ${money(h.qin)} · QPL ${money(h.qpl)}\n合計 ${money(h.total)}（${pct(h.share)}）`;
+    col.title = `${h.no} ${h.name || ''} ${h.jockey || ''}\n` +
+      `WIN ${money(h.win)} · PLA ${money(h.pla)}\n` +
+      `QIN ${money(h.qin)} · QPL ${money(h.qpl)}\n` +
+      `FCT ${money(h.fct)} · TRI ${money(h.tri)} · FF ${money(h.ff)}\n` +
+      `TCE ${money(h.tce)} · 多場 ${money(h.multi)}\n` +
+      `合計 ${money(h.total)}（${pct(h.share)}）`;
     box.appendChild(col);
   });
 }
