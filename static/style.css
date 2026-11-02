@@ -100,6 +100,17 @@ main { max-width: 1560px; margin: 0 auto; padding: 18px 22px 40px; }
 .dcol .dl { font-size: 10px; }
 .dist-meta { font-size: 11.5px; color: var(--dim); margin-left: 10px; font-weight: 400; }
 
+.blocks { display: grid; grid-template-columns: repeat(auto-fit, minmax(230px, 1fr)); gap: 10px; }
+.blk { border: 1px solid #1c2a37; border-radius: 8px; padding: 8px 10px; background: #0e1620; }
+.blk .h { display: flex; justify-content: space-between; font-size: 11.5px; color: var(--dim); }
+.blk .h b { color: #cfe0f0; font-weight: 600; }
+.blk .chip { display: flex; justify-content: space-between; gap: 8px; font-size: 11.5px;
+  padding: 3px 0; border-bottom: 1px dashed #17222d; }
+.blk .chip:last-child { border-bottom: 0; }
+.blk .chip .c { color: #ffd76a; font-variant-numeric: tabular-nums; }
+.blk .chip .m { color: #9fb4c8; font-variant-numeric: tabular-nums; }
+.blk .chip .p { color: var(--dim); }
+
 /* ---------- WQQP spectrum ---------- */
 .spec-card { margin-top: 12px; }
 .spec-wrap { overflow: auto; max-height: 420px; }

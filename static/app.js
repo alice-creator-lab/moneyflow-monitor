@@ -106,6 +106,7 @@ function render() {
   renderRaces();
   renderChart();
   renderDist();
+  renderBlocks();
   renderSpectrum();
   renderHot();
   renderPools();
@@ -162,7 +163,7 @@ function renderCards() {
 
   const items = [
     { k: '賽事總投注額', v: big(last), s: `${m.races.length} 場 · ${m.pools.length} 個彩池` },
-    { k: `第 ${race ? race.no : '—'} 場 WIN 池`, v: big(pool), s: race ? `${race.dist}m ${race.track || ''} ${race.cls || ''}` : '' },
+    { k: `第 ${race ? race.no : '—'} 場 WIN 池`, v: big(pool), s: race ? `${race.distance || ''}m ${race.track || ''} ${race.cls || ''}` : '' },
     { k: '5 分鐘流入', v: flow === null ? '—' : (flow >= 0 ? '+' : '') + big(Math.abs(flow)), s: flow === null ? '未有兩個時間點' : '全場合計', cls: flow > 0 ? 'up' : '' },
     { k: '開售狀態', v: m.sale_open ? '開售中' : (m.status || '—'), s: open, cls: m.sale_open ? 'gold' : '' },
   ];
@@ -186,7 +187,7 @@ function renderRaces() {
   $('#meeting-title').textContent = `${m.date} ${m.venue} · ${m.status || ''}`;
   const race = currentRace();
   $('#meeting-meta').textContent = race
-    ? `${race.name || ''} ${race.dist || ''}m ${race.track || ''} · ${race.n_runners || 0} 匹 · 開跑 ${hhmm(race.post_time)}（${countdown(race.post_time)}）`
+    ? `${race.name || ''} ${race.distance || ''}m ${race.track || ''} · ${race.n_runners || 0} 匹 · 開跑 ${hhmm(race.post_time)}（${countdown(race.post_time)}）`
     : '';
   (m.races || []).forEach((r) => {
     const b = el('button', 'rtab' + (r.no === state.race ? ' on' : ''));
@@ -240,6 +241,27 @@ function renderChart() {
   }).join('');
 
   box.innerHTML = `<svg viewBox="0 0 ${W} ${H}" preserveAspectRatio="none">${grid}${paths}${tl}</svg>`;
+}
+
+/* ------------------------------------------------------------ block trades */
+function renderBlocks() {
+  const box = $('#blocks');
+  const race = currentRace();
+  const bl = race?.blocks;
+  const meta = $('#blocks-meta');
+  if (!box) return;
+  if (!bl || !bl.length) {
+    box.innerHTML = '<div class="empty">未開售 — 未有組合資金</div>';
+    if (meta) meta.textContent = '';
+    return;
+  }
+  if (meta) meta.textContent = `R${race.no} · ${bl.length} 個彩池`;
+  box.innerHTML = bl.map((b) => `
+    <div class="blk">
+      <div class="h"><b>${b.label}</b><span>${big(b.total)}</span></div>
+      ${b.top.map((t) => `<div class="chip"><span class="c">${t.c}</span>
+        <span class="m">${big(t.money)}</span><span class="p">${t.pct}%</span></div>`).join('')}
+    </div>`).join('');
 }
 
 /* ------------------------------------------------------- money distribution */
@@ -323,6 +345,15 @@ function renderDistNotes(d) {
   }
   if (cold.length) {
     bits.push(`<span>大熱不穩（錢少過賠率應得）：${cold.map((h) => `<b>${h.no} 號 ×${h.ratio}</b>`).join('、')}</span>`);
+  }
+  const race = currentRace();
+  const ov = race?.overnight;
+  if (ov) {
+    const f = ov.flow || 0;
+    bits.push(`<span>隔夜飛（${hhmm(ov.ts)} 起）：WIN 池 ${big(ov.win_inv)} → ${big(ov.win_inv + f)}，` +
+      `<b>${f >= 0 ? '+' : ''}${big(Math.abs(f))}</b></span>`);
+  } else {
+    bits.push('<span>隔夜飛：未捕捉（賽日 09:00 前會自動記一次基準）</span>');
   }
   bits.push('<span>×1.00 = 資金份額同賠率隱含機率一致；≥1.4 或 ≤0.7 才算異常</span>');
   box.innerHTML = bits.join('');
@@ -452,6 +483,7 @@ function renderRunners() {
       <td class="num">${r.odds ? r.odds.toFixed(1) : '—'}</td>
       <td class="num muted">${r.pla ? r.pla.toFixed(1) : '—'}</td>
       <td class="num">${dv === null || dv === 0 ? '' : `<span class="${dv < 0 ? 'up' : 'down'}">${dv > 0 ? '+' : ''}${dv.toFixed(1)}</span>`}</td>
+      <td class="num muted">${ovCell(r)}</td>
       <td class="num">${r.drop ? `<span class="up">${r.drop.toFixed(1)}</span>` : '<span class="muted">0</span>'}</td>
       <td class="num">${r.stake ? money(r.stake) : '—'}</td>
       <td class="num muted">${r.share ? pct(r.share) : '—'}</td>`;
@@ -460,11 +492,19 @@ function renderRunners() {
   function row(tr) { return tr; }
 }
 
+function ovCell(r) {
+  if (!r.ov_odds) return '—';
+  if (!r.odds) return r.ov_odds.toFixed(1);
+  const d = r.odds - r.ov_odds;
+  const cls = d < -0.05 ? 'up' : d > 0.05 ? 'down' : 'muted';
+  return `${r.ov_odds.toFixed(1)}<span class="${cls}"> ${d > 0 ? '+' : ''}${d.toFixed(1)}</span>`;
+}
+
 /* ----------------------------------------------------------------------- boot */
 document.querySelectorAll('#runners th').forEach((th, i) => {
   th.style.cursor = 'pointer';
   th.onclick = () => {
-    const map = { 0: 'no', 3: 'odds', 7: 'stake' };
+    const map = { 0: 'no', 3: 'odds', 8: 'stake' };
     if (map[i]) { state.sort = map[i]; renderRunners(); }
   };
 });

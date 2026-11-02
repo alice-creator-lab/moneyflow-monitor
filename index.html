@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>賽馬熱錢流 · Phase 0</title>
-<link rel="stylesheet" href="static/style.css?v=1793605202">
+<link rel="stylesheet" href="static/style.css?v=1793605520">
 </head>
 <body>
 <header class="topbar">
@@ -53,6 +53,14 @@
     <div class="dist-notes" id="dist-notes"></div>
   </section>
 
+  <section class="card blocks-card">
+    <div class="card-head">
+      <h3>大戶投注範圍 <span class="dist-meta" id="blocks-meta"></span></h3>
+      <div class="legend"><span>每池最大 3 個組合，金額由池總額 × 隱含機率攤分</span></div>
+    </div>
+    <div id="blocks" class="blocks"><div class="empty">未開售</div></div>
+  </section>
+
   <section class="card spec-card">
     <div class="card-head">
       <h3>WQQP% 頻譜 <span class="dist-meta" id="spec-meta"></span></h3>
@@ -94,7 +102,7 @@
         <div class="card-head"><h3>馬匹</h3><span class="hint" id="runner-count"></span></div>
         <div class="table-wrap"><table id="runners"><thead>
           <tr><th>#</th><th>馬</th><th>騎師</th><th class="num">賠率</th><th class="num">位置</th>
-              <th class="num">Δ</th><th class="num">落飛</th><th class="num">資金</th><th class="num">隱含%</th></tr>
+              <th class="num">Δ</th><th class="num">隔夜</th><th class="num">落飛</th><th class="num">資金</th><th class="num">隱含%</th></tr>
         </thead><tbody></tbody></table></div>
       </div>
     </div>
@@ -103,10 +111,10 @@
   <footer>
     <p>資料：香港賽馬會公開賠率／投注額（唯讀、被動記錄）。本頁只供個人研究，非投注建議，不得轉載或轉售。</p>
     <p class="mono" id="boot"></p>
-<p class="mono">靜態快照 2026-11-02T15:40:01+08:00 · 由本機 collector 產生</p>
+<p class="mono">靜態快照 2026-11-02T15:45:20+08:00 · 由本機 collector 產生</p>
   </footer>
 </main>
 <script src="data.js"></script>
-<script src="static/app.js?v=1793605202"></script>
+<script src="static/app.js?v=1793605520"></script>
 </body>
 </html>
