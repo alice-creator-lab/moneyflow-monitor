@@ -344,7 +344,11 @@ function renderSpectrum() {
   const band = (v) => (v >= 30 ? 'c3' : v >= 20 ? 'c2' : v >= 10 ? 'c1' : 'c0');
   let html = '<thead><tr><th></th>' + nos.map((n) => `<th class="no">${n}</th>`).join('') + '</tr></thead><tbody>';
   sp.buckets.slice().reverse().forEach((b) => {
-    const mt = b.m === null || b.m === undefined ? '' : (b.m < 0 ? `T${b.m}` : `T+${b.m}`);
+    let mt = '';
+    if (b.m !== null && b.m !== undefined) {
+      mt = Math.abs(b.m) >= 120 ? `T${(b.m / 60).toFixed(1)}h`
+        : (b.m < 0 ? `T${b.m}` : `T+${b.m}`);
+    }
     html += `<tr><td class="t">${b.t} <span style="opacity:.55">${mt}</span></td>`;
     nos.forEach((n) => {
       const v = b.cells[String(n)] || 0;
