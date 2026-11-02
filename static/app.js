@@ -339,7 +339,9 @@ function renderPools() {
     const ta = order.indexOf(a.type), tb = order.indexOf(b.type);
     if (ta !== tb) return (ta < 0 ? 99 : ta) - (tb < 0 ? 99 : tb);
     if (legNo(a) !== legNo(b)) return legNo(a) - legNo(b);
-    return (b.inv || 0) - (a.inv || 0);
+    const an = a.inv === null || a.inv === undefined ? -1 : a.inv;
+    const bn = b.inv === null || b.inv === undefined ? -1 : b.inv;
+    return bn - an;
   }).slice(0, 60);
   $('#pool-count').textContent = `${m?.pools.length || 0} 個`;
   if (!pools.length) { tbody.innerHTML = '<tr><td colspan="5" class="muted">未有彩池資料</td></tr>'; return; }
