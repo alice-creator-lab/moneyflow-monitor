@@ -252,8 +252,9 @@ function renderBasics() {
   if (!tbody) return;
   const rs = (race?.runners || []).slice().sort((a, b) => a.no - b.no);
   if (!rs.length) { tbody.innerHTML = '<tr><td colspan="10" class="empty">未有排位</td></tr>'; return; }
-  const maxW = Math.max(...rs.map((r) => r.weight || 0));
-  const minW = Math.min(...rs.filter((r) => r.weight).map((r) => r.weight));
+  const weights = rs.map((r) => r.weight || 0).filter(Boolean);
+  const maxW = Math.max(...weights, 0);
+  const heavyUnique = weights.filter((w) => w === maxW).length === 1;
   const wf = race?.winflow;
   const byNo = new Map((wf?.horses || []).map((h) => [h.no, h]));
   if (meta) meta.textContent = `R${race.no} · ${rs.length} 匹 · 跑 ${race.distance || ''}m`;
@@ -267,7 +268,7 @@ function renderBasics() {
     const tags = [];
     if (firstGear) tags.push('<span class="tag">首戴</span>');
     if (r.draw && r.draw <= 3) tags.push('<span class="tag ok">內檔</span>');
-    if (r.weight && r.weight === maxW && rs.length > 2) tags.push('<span class="tag">重磅</span>');
+    if (heavyUnique && r.weight === maxW && rs.length > 2) tags.push('<span class="tag">重磅</span>');
     if (r.ov_odds && r.odds && r.odds < r.ov_odds * 0.85) tags.push('<span class="tag up">隔夜落飛</span>');
     if (r.hot) tags.push('<span class="tag">大熱</span>');
     if (f.delta_pct >= 8) tags.push('<span class="tag up">5分鐘 +' + f.delta_pct.toFixed(0) + '%</span>');
@@ -275,7 +276,7 @@ function renderBasics() {
       <td class="muted">${r.no}</td>
       <td>${r.name || ''}<span class="muted">${r.name_en ? ' · ' + r.name_en.slice(0, 18) : ''}</span></td>
       <td class="num">${r.draw ?? '—'}</td>
-      <td class="num">${r.weight ?? '—'}${r.weight === maxW && rs.length > 2 ? '<span class="muted">*</span>' : ''}</td>
+      <td class="num">${r.weight ?? '—'}${heavyUnique && r.weight === maxW ? '<span class="muted">*</span>' : ''}</td>
       <td class="num">${r.rating ?? '—'}</td>
       <td>${l6html}</td>
       <td class="muted">${r.gear || '—'}</td>
