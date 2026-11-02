@@ -341,7 +341,12 @@ function renderSpectrum() {
   }
   const nos = sp.horses;
   const spikeSet = new Set((sp.spikes || []).map((s) => `${s.t}|${s.no}`));
-  const band = (v) => (v >= 30 ? 'c3' : v >= 20 ? 'c2' : v >= 10 ? 'c1' : 'c0');
+  // bands are relative to a fair share (100/n) so small and big fields read the same
+  const fair = 100 / Math.max(1, nos.length);
+  const band = (v) => {
+    const r = v / fair;
+    return r >= 2 ? 'c3' : r >= 1.3 ? 'c2' : r >= 0.7 ? 'c1' : 'c0';
+  };
   let html = '<thead><tr><th></th>' + nos.map((n) => `<th class="no">${n}</th>`).join('') + '</tr></thead><tbody>';
   sp.buckets.slice().reverse().forEach((b) => {
     let mt = '';
@@ -349,7 +354,7 @@ function renderSpectrum() {
       mt = Math.abs(b.m) >= 120 ? `T${(b.m / 60).toFixed(1)}h`
         : (b.m < 0 ? `T${b.m}` : `T+${b.m}`);
     }
-    html += `<tr><td class="t">${b.t} <span style="opacity:.55">${mt}</span></td>`;
+    html += `<tr><td class="t">${b.t}<span class="tl">${mt}</span></td>`;
     nos.forEach((n) => {
       const v = b.cells[String(n)] || 0;
       const cls = `${band(v)}${spikeSet.has(`${b.t}|${n}`) ? ' spike' : ''}`;
