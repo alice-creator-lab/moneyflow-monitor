@@ -76,7 +76,7 @@ main { max-width: 1560px; margin: 0 auto; padding: 18px 22px 40px; }
 
 /* ---------- money distribution bars ---------- */
 .dist-card { margin-top: 12px; }
-.dist-chart { display: flex; align-items: flex-end; gap: 8px; height: 300px;
+.dist-chart { display: flex; align-items: flex-end; gap: 8px; height: 340px;
   overflow-x: auto; padding: 4px 2px 0; }
 .dcol { display: flex; flex-direction: column; align-items: center; justify-content: flex-end;
   min-width: 54px; flex: 1 1 0; height: 100%; }
@@ -86,9 +86,10 @@ main { max-width: 1560px; margin: 0 auto; padding: 18px 22px 40px; }
 .dcol .badge.hot { background: #c62f2f; box-shadow: 0 0 10px #ff5d5d55; }
 .dcol .badge.warm { background: #a1621b; }
 .dcol .badge.cool { background: #2b5f8f; }
-.dcol .stack { width: 34px; display: flex; flex-direction: column-reverse; border-radius: 3px 3px 0 0;
-  overflow: hidden; background: #131c26; }
-.dcol .stack > i { display: block; width: 100%; }
+.dcol .stack { width: 34px; flex: 0 0 auto; display: flex; flex-direction: column-reverse;
+  border-radius: 3px 3px 0 0; overflow: hidden; background: linear-gradient(180deg,#0f1822,#0c141c); }
+.dcol .stack > i { display: block; width: 100%; flex: 0 0 auto; }
+.dcol .stack > i:first-child { border-radius: 0; }
 .dcol .amt { font-size: 10.5px; color: #b9c9da; margin-top: 4px; font-variant-numeric: tabular-nums; }
 .dcol .no { font-size: 10.5px; color: var(--dim); margin-top: 2px; }
 .dcol .od { font-size: 11px; color: #cfe0f0; font-variant-numeric: tabular-nums; }

@@ -263,7 +263,7 @@ function renderDist() {
   $('#dist-title').innerHTML = title + since;
 
   const max = Math.max(...d.horses.map((h) => h.total), 1);
-  const H = 220;
+  const H = 240;
   const rank = new Map(d.horses.map((h, i) => [h.no, i]));
   box.innerHTML = '';
   d.horses.forEach((h) => {
@@ -281,7 +281,7 @@ function renderDist() {
       `<div class="dl ${dv >= 0 ? 'up' : 'down'}">${dv >= 0 ? '+' : ''}${big(Math.abs(dv))}</div>`;
     col.innerHTML = `
       <div class="badge ${cls}">${h.no}</div>
-      <div class="stack" style="height:${H}px;justify-content:flex-end">${segs}</div>
+      <div class="stack" style="height:${H}px">${segs}</div>
       <div class="amt">${big(h.total)}</div>
       <div class="od">${h.odds ? h.odds.toFixed(1) : '—'}</div>
       ${dl}`;
@@ -323,9 +323,12 @@ function renderPools() {
   const m = state.meeting;
   const tbody = $('#pools tbody');
   tbody.innerHTML = '';
+  const order = ['WIN', 'PLA', 'QIN', 'QPL', 'FCT', 'TCE', 'TRI', 'FF', 'QTT', 'CWA', 'CWB', 'CWC', 'IWN', 'DBL', 'TBL', 'DT', 'TT', 'SixUP'];
+  const legNo = (p) => parseInt(String(p.leg || '').split('-')[0], 10) || 0;
   const pools = (m?.pools || []).slice().sort((a, b) => {
-    if (a.type === 'WIN') return -1;
-    if (b.type === 'WIN') return 1;
+    const ta = order.indexOf(a.type), tb = order.indexOf(b.type);
+    if (ta !== tb) return (ta < 0 ? 99 : ta) - (tb < 0 ? 99 : tb);
+    if (legNo(a) !== legNo(b)) return legNo(a) - legNo(b);
     return (b.inv || 0) - (a.inv || 0);
   }).slice(0, 60);
   $('#pool-count').textContent = `${m?.pools.length || 0} 個`;
