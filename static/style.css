@@ -96,6 +96,26 @@ main { max-width: 1560px; margin: 0 auto; padding: 18px 22px 40px; }
 .dcol .dl { font-size: 10px; }
 .dist-meta { font-size: 11.5px; color: var(--dim); margin-left: 10px; font-weight: 400; }
 
+/* ---------- WQQP spectrum ---------- */
+.spec-card { margin-top: 12px; }
+.spec-wrap { overflow: auto; max-height: 420px; }
+table.spec { border-collapse: separate; border-spacing: 1px; font-size: 10.5px; }
+table.spec th, table.spec td { padding: 2px 3px; text-align: center; min-width: 22px;
+  font-variant-numeric: tabular-nums; }
+table.spec th { color: var(--dim); font-weight: 500; position: sticky; top: 0; background: var(--card);
+  z-index: 2; }
+table.spec th.no { color: #cfe0f0; }
+table.spec td.t { color: var(--dim); text-align: right; padding-right: 6px; white-space: nowrap;
+  position: sticky; left: 0; background: var(--card); }
+table.spec td.c0 { background: #1a2531; color: #6d7f91; }
+table.spec td.c1 { background: #7a2f3a; color: #ffd7d3; }
+table.spec td.c2 { background: #b8342f; color: #ffe9e6; }
+table.spec td.c3 { background: #e8483c; color: #fff; font-weight: 650; }
+table.spec td.spike { outline: 2px solid #ffd76a; outline-offset: -2px; }
+.dist-notes { font-size: 11.5px; color: var(--dim); margin-top: 6px; display: flex; gap: 14px;
+  flex-wrap: wrap; align-items: center; }
+.dist-notes b { color: #ffd76a; font-weight: 600; }
+
 /* ---------- chart ---------- */
 .chart { height: 260px; position: relative; }
 .chart svg { width: 100%; height: 100%; display: block; }

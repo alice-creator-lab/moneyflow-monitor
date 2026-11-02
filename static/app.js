@@ -106,6 +106,7 @@ function render() {
   renderRaces();
   renderChart();
   renderDist();
+  renderSpectrum();
   renderHot();
   renderPools();
   renderRunners();
@@ -270,6 +271,7 @@ function renderDist() {
   const max = Math.max(...d.horses.map((h) => h.total), 1);
   const H = 240;
   const rank = new Map(d.horses.map((h, i) => [h.no, i]));
+  renderDistNotes(d);
   box.innerHTML = '';
   d.horses.forEach((h) => {
     const col = el('div', 'dcol');
@@ -280,7 +282,9 @@ function renderDist() {
       return `<i style="height:${px.toFixed(1)}px;background:${color}" title="${label} HK$${nf.format(Math.round(v))}"></i>`;
     }).join('');
     const r = rank.get(h.no);
-    const cls = r < 3 ? 'hot' : r < 6 ? 'warm' : 'cool';
+    const cls = h.ratio && h.ratio >= 1.4 ? 'hot'
+      : h.ratio && h.ratio <= 0.7 ? 'cool'
+        : r < 3 ? 'warm' : 'cool';
     const dv = h.delta;
     const dl = dv === null || dv === undefined ? '' :
       `<div class="dl ${dv >= 0 ? 'up' : 'down'}">${dv >= 0 ? '+' : ''}${big(Math.abs(dv))}</div>`;
@@ -298,6 +302,54 @@ function renderDist() {
       `合計 ${money(h.total)}（${pct(h.share)}）`;
     box.appendChild(col);
   });
+}
+
+function renderDistNotes(d) {
+  const box = $('#dist-notes');
+  if (!box) return;
+  const hot = d.horses.filter((h) => h.ratio >= 1.4).sort((x, y) => y.ratio - x.ratio).slice(0, 4);
+  const cold = d.horses.filter((h) => h.ratio && h.ratio <= 0.7).sort((x, y) => x.ratio - y.ratio).slice(0, 3);
+  const bits = [];
+  if (hot.length) {
+    bits.push(`<span>異常偏熱（錢多過賠率應得）：${hot.map((h) => `<b>${h.no} 號 ×${h.ratio}</b>`).join('、')}</span>`);
+  }
+  if (cold.length) {
+    bits.push(`<span>大熱不穩（錢少過賠率應得）：${cold.map((h) => `<b>${h.no} 號 ×${h.ratio}</b>`).join('、')}</span>`);
+  }
+  bits.push('<span>×1.00 = 資金份額同賠率隱含機率一致；≥1.4 或 ≤0.7 才算異常</span>');
+  box.innerHTML = bits.join('');
+}
+
+function renderSpectrum() {
+  const tbl = $('#spec-table');
+  const race = currentRace();
+  const sp = race?.spectrum;
+  const meta = $('#spec-meta');
+  if (!tbl) return;
+  if (!sp || !sp.buckets || !sp.buckets.length) {
+    tbl.innerHTML = '';
+    if (meta) meta.textContent = '未夠時間累積頻譜（每 2 分鐘一格）';
+    return;
+  }
+  const nos = sp.horses;
+  const spikeSet = new Set((sp.spikes || []).map((s) => `${s.t}|${s.no}`));
+  const band = (v) => (v >= 30 ? 'c3' : v >= 20 ? 'c2' : v >= 10 ? 'c1' : 'c0');
+  let html = '<thead><tr><th></th>' + nos.map((n) => `<th class="no">${n}</th>`).join('') + '</tr></thead><tbody>';
+  sp.buckets.slice().reverse().forEach((b) => {
+    html += `<tr><td class="t">${b.t}</td>`;
+    nos.forEach((n) => {
+      const v = b.cells[String(n)] || 0;
+      const cls = `${band(v)}${spikeSet.has(`${b.t}|${n}`) ? ' spike' : ''}`;
+      html += `<td class="${cls}" title="${n} 號 ${b.t}：${v}%">${v >= 10 ? Math.round(v) : ''}</td>`;
+    });
+    html += '</tr>';
+  });
+  html += '</tbody>';
+  tbl.innerHTML = html;
+  if (meta) {
+    const sp2 = (sp.spikes || []).length;
+    meta.textContent = `每格 = 該馬在該 2 分鐘的資金份額；黃框 = 一點紅（≥20% 且係自身中位數 1.8 倍以上）${sp2 ? `，暫見 ${sp2} 個` : ''}`;
+  }
 }
 
 /* -------------------------------------------------------------------- hotlist */
