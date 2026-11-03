@@ -569,7 +569,34 @@ document.querySelectorAll('#runners th').forEach((th, i) => {
 });
 
 refresh();
-if (!STATIC) state.timer = setInterval(refresh, 15000);
+// adaptive refresh: the closer the off, the faster the page reloads
+const secsToPost = () => {
+  const races = state.meeting?.races || [];
+  let best = null;
+  for (const r of races) {
+    const t = r.post_time ? Date.parse(r.post_time) : NaN;
+    if (Number.isNaN(t)) continue;
+    const left = (t - Date.now()) / 1000;
+    if (left >= -90 && (best === null || left < best)) best = left;
+  }
+  return best;
+};
+const refreshMs = () => {
+  if (STATIC) return 0;
+  const s = secsToPost();
+  if (s === null) return 15000;
+  if (s <= 40) return 1500;
+  if (s <= 300) return 3000;
+  if (s <= 900) return 6000;
+  return 15000;
+};
+if (!STATIC) {
+  const loop = async () => {
+    await refresh();
+    state.timer = setTimeout(loop, refreshMs());
+  };
+  state.timer = setTimeout(loop, 1000);
+}
 state.ageTimer = setInterval(() => {
   if (STATIC) return;
   const h = state.summary?.health;
