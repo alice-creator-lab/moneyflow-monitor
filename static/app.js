@@ -624,9 +624,10 @@ const refreshMs = () => {
   const s = secsToPost();
   if (s === null) return 15000;
   if (s <= 40) return 1500;
-  if (s <= 300) return 3000;
-  if (s <= 900) return 6000;
-  return 15000;
+  if (s <= 70) return 1000;     // last minute: refresh every second
+  if (s <= 300) return 2000;
+  if (s <= 900) return 4000;
+  return 12000;
 };
 if (!STATIC) {
   const loop = async () => {
