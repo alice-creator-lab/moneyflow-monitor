@@ -60,6 +60,14 @@ const delta = (cur, prev) => {
 /* --------------------------------------------------------------------- fetch */
 const STATIC = window.MF_STATIC || null;   // GitHub Pages snapshot mode
 
+// one vocabulary for state, because HKJC keeps status=DEFINED while a meeting is already selling
+const PHASE_LABEL = {
+  presale: '未開售', selling: '開售中', racing: '賽事進行中',
+  finished: '已完結', imminent: '最後衝刺', jumped: '已開跑',
+};
+const phaseLabel = (p) => PHASE_LABEL[p] || '—';
+const phaseCls = (p) => ({ selling: 'gold', racing: 'up', imminent: 'up', finished: 'muted', jumped: 'muted' }[p] || '');
+
 async function api(path) {
   if (STATIC) {
     if (path === 'api/summary') return STATIC.summary;
@@ -139,7 +147,7 @@ function renderPills() {
   nav.innerHTML = '';
   (state.summary?.meetings || []).forEach((m) => {
     const b = el('button', 'pill' + (m.id === state.mid ? ' on' : ''));
-    b.innerHTML = `${m.date.slice(5)} ${m.venue}<span class="v">${m.sale_open ? '開售' : (m.status || '—')}</span>`;
+    b.innerHTML = `${m.date.slice(5)} ${m.venue}<span class="v ${phaseCls(m.phase)}">${phaseLabel(m.phase)}</span>`;
     b.onclick = () => { state.mid = m.id; state.race = null; refresh(); };
     nav.appendChild(b);
   });
@@ -168,7 +176,7 @@ function renderCards() {
     { k: '賽事總投注額', v: big(last), s: `${m.races.length} 場 · ${m.pools.length} 個彩池` },
     { k: `第 ${race ? race.no : '—'} 場 WIN 池`, v: big(pool), s: race ? `${race.distance || ''}m ${race.track || ''} ${race.cls || ''}` : '' },
     { k: '5 分鐘流入', v: flow === null ? '—' : (flow >= 0 ? '+' : '') + big(Math.abs(flow)), s: flow === null ? '未有兩個時間點' : '全場合計', cls: flow > 0 ? 'up' : '' },
-    { k: '開售狀態', v: m.sale_open ? '開售中' : (m.status || '—'), s: open, cls: m.sale_open ? 'gold' : '' },
+    { k: '賽事狀態', v: phaseLabel(m.phase), s: open, cls: phaseCls(m.phase) },
   ];
   items.forEach((it) => {
     const c = el('div', 'card stat');
@@ -187,14 +195,17 @@ function renderRaces() {
   const tabs = $('#race-tabs');
   tabs.innerHTML = '';
   if (!m) { $('#meeting-title').textContent = '—'; return; }
-  $('#meeting-title').textContent = `${m.date} ${m.venue} · ${m.status || ''}`;
+  $('#meeting-title').textContent = `${m.date} ${m.venue} · ${phaseLabel(m.phase)}`;
   const race = currentRace();
   $('#meeting-meta').textContent = race
-    ? `${race.name || ''} ${race.distance || ''}m ${race.track || ''} · ${race.n_runners || 0} 匹 · 開跑 ${hhmm(race.post_time)}（${countdown(race.post_time)}）`
+    ? `${race.name || ''} ${race.distance || ''}m ${race.track || ''} · ${race.n_runners || 0} 匹 · 開跑 ${hhmm(race.post_time)}（${countdown(race.post_time)}）· ${phaseLabel(race.phase)}`
     : '';
   (m.races || []).forEach((r) => {
-    const b = el('button', 'rtab' + (r.no === state.race ? ' on' : ''));
-    b.innerHTML = `R${r.no}<span class="t">${hhmm(r.post_time)}</span>`;
+    const cls = ['rtab', r.no === state.race ? 'on' : '', 'rp-' + (r.phase || 'selling')].join(' ');
+    const b = el('button', cls);
+    const tag = r.phase && r.phase !== 'selling' && r.phase !== 'presale'
+      ? `<span class="st ${phaseCls(r.phase)}">${phaseLabel(r.phase)}</span>` : '';
+    b.innerHTML = `R${r.no}<span class="t">${hhmm(r.post_time)}</span>${tag}`;
     b.onclick = () => { state.race = r.no; render(); };
     tabs.appendChild(b);
   });
