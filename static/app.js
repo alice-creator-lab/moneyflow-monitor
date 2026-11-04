@@ -643,7 +643,7 @@ if (!STATIC) {
     const near = left !== null && left > -60 && left <= 1200;
     state.snapTimer = setTimeout(snapLoop, near ? 30000 : 120000);
   };
-  state.snapTimer = setTimeout(snapLoop, 30000);
+  state.snapTimer = setTimeout(snapLoop, 1500);   // pull the newest build straight away
 }
 state.ageTimer = setInterval(() => {
   if (STATIC) {
