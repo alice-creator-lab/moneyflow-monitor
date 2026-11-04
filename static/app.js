@@ -85,6 +85,13 @@ const PHASE_LABEL = {
 const phaseLabel = (p) => PHASE_LABEL[p] || '—';
 const phaseCls = (p) => ({ selling: 'gold', racing: 'up', imminent: 'up', finished: 'muted', jumped: 'muted' }[p] || '');
 
+// pool-level betting status arrives as START_SELL / STOP_SELL / SUSPENDED
+const POOL_STATUS = {
+  START_SELL: '收注中', OPEN: '收注中', SELLING: '收注中',
+  STOP_SELL: '已封盤', CLOSED: '已封盤', SUSPENDED: '暫停',
+};
+const poolStatus = (s) => POOL_STATUS[String(s || '').toUpperCase()] || (s || '—');
+
 async function api(path) {
   if (STATIC) {
     if (path === 'api/summary') return STATIC.summary;
@@ -142,7 +149,7 @@ function render() {
   renderRunners();
   $('#boot').textContent = STATIC
     ? '靜態快照 · GitHub Pages · 每 30–120 秒自動重新拉取'
-    : `updated ${new Date().toLocaleTimeString('zh-HK', { hour12: false })} · api /api/summary`;
+    : `即時連線 · ${new Date().toLocaleTimeString('zh-HK', { hour12: false })} · 最後一分鐘每 1 秒更新`;
 }
 
 function renderHealth() {
@@ -552,7 +559,7 @@ function renderPools() {
       <td class="muted">${p.leg || ''}</td>
       <td class="num">${money(p.inv)}</td>
       <td class="num">${delta(p.inv, p.prev_inv)}</td>
-      <td class="sell ${open ? 'open' : ''}">${sell || '—'}</td>`;
+      <td class="sell ${open ? 'open' : ''}">${poolStatus(sell)}</td>`;
     tbody.appendChild(tr);
   });
 }
