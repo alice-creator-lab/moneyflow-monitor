@@ -58,7 +58,24 @@ const delta = (cur, prev) => {
 };
 
 /* --------------------------------------------------------------------- fetch */
-const STATIC = window.MF_STATIC || null;   // GitHub Pages snapshot mode
+let STATIC = window.MF_STATIC || null;   // GitHub Pages snapshot mode
+
+/* In snapshot mode the page can still keep itself fresh: GitHub Pages caches every URL for
+   10 minutes, but a *new* query string is a cache miss, so re-fetching data.js?ts=… returns the
+   latest build without reloading the page. */
+async function staticRefresh() {
+  if (!window.MF_STATIC) return;
+  try {
+    const res = await fetch(`data.js?ts=${Date.now()}`, { cache: 'no-store' });
+    if (!res.ok) return;
+    const txt = await res.text();
+    const next = JSON.parse(txt.replace(/^\s*window\.MF_STATIC\s*=\s*/, '').replace(/;\s*$/, ''));
+    STATIC = next;
+    window.MF_STATIC = next;
+    render();
+    if (window.MF_STATIC_AFTER) window.MF_STATIC_AFTER();
+  } catch (e) { /* keep showing what we have */ }
+}
 
 // one vocabulary for state, because HKJC keeps status=DEFINED while a meeting is already selling
 const PHASE_LABEL = {
@@ -90,8 +107,9 @@ async function refresh() {
     if (!state.mid && s.meetings.length) {
       const want = new URLSearchParams(location.search).get('m');
       const picked = want ? s.meetings.find((m) => m.id === want) : null;
-      const withSale = s.meetings.find((m) => m.sale_open) || null;
-      state.mid = (picked || withSale || s.meetings[s.meetings.length - 1]).id;
+      // prefer the meeting that is actually taking bets — a finished one also has sale_open
+      const live = s.meetings.find((m) => m.phase === 'selling' || m.phase === 'racing') || null;
+      state.mid = (picked || live || s.meetings[s.meetings.length - 1]).id;
     }
     if (state.mid) {
       state.meeting = await api('api/meeting/' + encodeURIComponent(state.mid));
@@ -123,7 +141,7 @@ function render() {
   renderPools();
   renderRunners();
   $('#boot').textContent = STATIC
-    ? '靜態快照 · 由本機 collector 產生（GitHub Pages）'
+    ? '靜態快照 · GitHub Pages · 每 30–120 秒自動重新拉取'
     : `updated ${new Date().toLocaleTimeString('zh-HK', { hour12: false })} · api /api/summary`;
 }
 
@@ -131,7 +149,8 @@ function renderHealth() {
   const h = state.summary?.health || {};
   if (STATIC) {
     document.querySelectorAll('.dot').forEach((d) => { d.className = 'dot ok'; });
-    $('#age').textContent = `快照 ${String(STATIC.summary.now || '').replace('T', ' ').slice(5, 16)}`;
+    const stamp = String(STATIC.summary.now || '').replace('T', ' ');
+    $('#age').textContent = `快照 ${stamp.slice(5, 19)}`;
     return;
   }
   document.querySelectorAll('.dot').forEach((d) => {
@@ -615,9 +634,25 @@ if (!STATIC) {
     state.timer = setTimeout(loop, refreshMs());
   };
   state.timer = setTimeout(loop, 1000);
+} else {
+  // snapshot build: pull the newest data.js (cache-busted) instead of reloading the page
+  const snapLoop = async () => {
+    await staticRefresh();
+    const race = currentRace();
+    const left = race?.post_time ? secs(race.post_time) : null;
+    const near = left !== null && left > -60 && left <= 1200;
+    state.snapTimer = setTimeout(snapLoop, near ? 30000 : 120000);
+  };
+  state.snapTimer = setTimeout(snapLoop, 30000);
 }
 state.ageTimer = setInterval(() => {
-  if (STATIC) return;
+  if (STATIC) {
+    const race = currentRace();
+    if (race?.post_time && $('#meeting-meta')) {
+      $('#meeting-meta').textContent = $('#meeting-meta').textContent.replace(/（.*?）/, `（${countdown(race.post_time)}）`);
+    }
+    return;
+  }
   const h = state.summary?.health;
   if (!h) return;
   if (h.last_poll) {
