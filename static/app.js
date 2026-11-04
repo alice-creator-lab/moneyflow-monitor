@@ -324,8 +324,16 @@ function renderBlocks() {
 }
 
 /* ------------------------------------------------------- money distribution */
-const EARLY_COLOR = '#3f7fbf';   // money already in before T-15
-const LATE_COLOR = '#f5a524';    // money added inside the last 15 minutes
+// money stacked by the time band it arrived in
+const BANDS = [
+  ['overnight', '#5b6f8a', '隔夜（基準前）'],
+  ['day', '#3f7fbf', '即日 → T-15'],
+  ['p153', '#2fa37f', 'T-15 → T-3'],
+  ['m31', '#b06cff', 'T-3 → T-1'],
+  ['s40m1', '#f5a524', 'T-1 → T-40s'],
+  ['s20_40', '#ff8f5d', 'T-40s → T-20s'],
+  ['tail', '#e8483c', '最後 20 秒'],
+];
 
 function renderDist() {
   const box = $('#dist-chart');
@@ -339,7 +347,7 @@ function renderDist() {
   const lateShare = w.total ? w.late_total / w.total * 100 : 0;
   $('#dist-title').innerHTML =
     `R${race.no} 獨贏熱錢分佈 <b>${nf.format(w.total)}</b>` +
-    `<span class="dist-meta">T-15 後新增 ${big(w.late_total)}（${lateShare.toFixed(0)}%）· 每 1 分鐘更新</span>`;
+    `<span class="dist-meta">最後15分鐘 ${big(w.late_total)}（${lateShare.toFixed(0)}%）· 按到帳時段上色</span>`;
 
   const max = Math.max(...w.horses.map((h) => h.stake), 1);
   const H = 240;
@@ -350,10 +358,7 @@ function renderDist() {
   box.innerHTML = '';
   w.horses.forEach((h) => {
     const col = el('div', 'dcol');
-    const segs = [
-      [h.base, EARLY_COLOR, 'T-15 前'],
-      [h.late, LATE_COLOR, '最後 15 分鐘新增'],
-    ].map(([v, color, label]) => {
+    const segs = BANDS.map(([k, color, label]) => [h[k] || 0, color, label]).map(([v, color, label]) => {
       if (!v) return '';
       const px = Math.max(1, (v / max) * H);
       return `<i style="height:${px.toFixed(1)}px;background:${color}" title="${label} HK$${nf.format(Math.round(v))}"></i>`;
@@ -370,12 +375,12 @@ function renderDist() {
         <div class="stack" style="height:${H}px">${segs}</div>
       </div>
       <div class="amt">${big(h.stake)}</div>
-      <div class="od">${h.late ? `<span style="color:${LATE_COLOR}">+${big(h.late)}</span>` : ''}</div>
+      <div class="od">${h.tail ? `<span style="color:#e8483c">+${big(h.tail)}</span>` : (h.m31 ? `<span style="color:#b06cff">+${big(h.m31)}</span>` : '')}</div>
       ${dl}`;
     col.title = `${h.no} ${race.runners?.find((x) => x.no === h.no)?.name || ''}\n` +
       `獨贏資金 ${money(h.stake)}（佔池 ${h.share}%）\n` +
-      `T-15 前 ${money(h.base)} · 最後 15 分鐘 +${money(h.late)}（${h.late_pct}%）\n` +
-      `對比 5 分鐘前 ${dp === null ? '—' : (dp >= 0 ? '+' : '') + dp + '%'}（份額 ${h.share_prev ?? '—'}% → ${h.share}%）`;
+      BANDS.map(([k, , label]) => `${label}：${money(h[k] || 0)}`).join('\n') +
+      `\n對比 5 分鐘前 ${dp === null ? '—' : (dp >= 0 ? '+' : '') + dp + '%'}（份額 ${h.share_prev ?? '—'}% → ${h.share}%）`;
     box.appendChild(col);
   });
 }
@@ -409,9 +414,12 @@ function renderDistNotes(w) {
   } else {
     bits.push('<span>隔夜飛：未捕捉（賽日 09:00 前會自動記一次基準）</span>');
   }
-  bits.push(`<span><i style="display:inline-block;width:9px;height:9px;background:${EARLY_COLOR};border-radius:2px"></i> T-15 前累積 ·
-    <i style="display:inline-block;width:9px;height:9px;background:${LATE_COLOR};border-radius:2px"></i> 最後 15 分鐘每分鐘新增 ·
-    Δ% = 對比 5 分鐘前</span>`);
+  const lastMin = (w.bands ? w.bands.s40m1 + w.bands.s20_40 + w.bands.tail : 0);
+  const last3 = (w.bands ? w.bands.m31 + lastMin : 0);
+  bits.push(`<span>最後 3 分鐘 +${big(last3)} · 最後 1 分鐘 +${big(lastMin)}（其中 20 秒 +${big(w.bands?.tail || 0)}）</span>`);
+  bits.push('<span>' + BANDS.map(([, c, label]) =>
+    `<i style="display:inline-block;width:9px;height:9px;background:${c};border-radius:2px"></i> ${label}`).join(' · ') +
+    ' · Δ% = 對比 5 分鐘前</span>');
   box.innerHTML = bits.join('');
 }
 
