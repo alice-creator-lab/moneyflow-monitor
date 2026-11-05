@@ -134,11 +134,29 @@ async function refresh() {
 }
 
 /* --------------------------------------------------------------------- render */
+function raceKey() { return `${state.mid}:${state.race}`; }
+function raceDone(r) {
+  return !!r && (r.phase === 'finished' || r.phase === 'jumped') && !!(r.result && r.result.ok);
+}
+
 function render() {
+  // a race that already has its 賽果 is settled data: render it once, then leave it alone
+  const race = currentRace();
+  if (raceDone(race) && state.frozen === raceKey()) {
+    renderHealth();
+    renderPills();
+    $('#boot').textContent = STATIC
+      ? '靜態快照 · 已完結場次唔再更新'
+      : `已完結 · R${race.no} 賽果已鎖定，暫停更新呢場`;
+    return;
+  }
+  if (raceDone(race)) state.frozen = raceKey(); else state.frozen = null;
+
   renderHealth();
   renderPills();
   renderCards();
   renderRaces();
+  renderResult();
   renderChart();
   renderDist();
   renderBasics();
@@ -562,6 +580,43 @@ function renderPools() {
       <td class="sell ${open ? 'open' : ''}">${poolStatus(sell)}</td>`;
     tbody.appendChild(tr);
   });
+}
+
+/* --------------------------------------------------------------------- result */
+function renderResult() {
+  const card = $('#result-card');
+  if (!card) return;
+  const race = currentRace();
+  const res = race?.result;
+  if (!res || !res.ok) { card.hidden = true; return; }
+  card.hidden = false;
+
+  const finishers = (res.rows || []).filter((r) => /^\d+$/.test(r.finish));
+  const top = finishers.slice(0, 4);
+  $('#result-meta').textContent =
+    `R${race.no} · ${top[0] ? top[0].name + ' 勝出' : ''} · ${(res.rows || []).length} 匹`;
+
+  const rows = top.map((r, i) => `<div class="rc${i === 0 ? ' win' : ''}">
+      <span class="pos">${r.finish}</span>
+      <span class="no">${r.no}</span>
+      <span class="nm">${r.name}</span>
+      <span class="jk">${r.jockey || ''}</span>
+      <span class="od">${r.odds ? r.odds.toFixed(1) : '—'}</span>
+      <span class="mg">${i === 0 ? '—' : (r.dist || '')}</span>
+    </div>`).join('');
+
+  const divs = res.dividends || [];
+  const of = (name) => divs.filter((d) => d.pool === name);
+  const line = [['獨贏', of('獨贏')], ['位置', of('位置')], ['連贏', of('連贏')], ['位置Q', of('位置Q')]]
+    .filter(([, arr]) => arr.length)
+    .map(([name, arr]) => `<span class="dv"><b>${name}</b> ` +
+      arr.map((d) => `${d.combo} $${d.dividend === null ? '—' : d.dividend}`).join(' · ') + '</span>')
+    .join('');
+
+  const head = '<div class="rc-head"><span>名</span><span>馬號</span><span>馬名</span>' +
+    '<span>騎師</span><span>開跑</span><span>距離</span></div>';
+  $('#result-body').innerHTML = `<div class="podium">${head}${rows}</div>` +
+    (line ? `<div class="dvs">${line}</div>` : '');
 }
 
 /* -------------------------------------------------------------------- runners */

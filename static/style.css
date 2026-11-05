@@ -130,6 +130,28 @@ td .l5 { font-size: 10.5px; color: #9fb4c8; }
 .v.up { color: #4ade80; }
 .v.gold { color: #f5a524; }
 
+/* ---------- race result ---------- */
+.result-card .podium { display: flex; flex-direction: column; gap: 2px; }
+.result-card .rc, .result-card .rc-head {
+  display: grid; grid-template-columns: 34px 44px 1fr 90px 62px 80px;
+  align-items: center; gap: 8px; padding: 5px 8px; border-radius: 6px;
+  font-size: 13px;
+}
+.result-card .rc-head { color: #6b7d90; font-size: 10px; letter-spacing: .08em; padding-bottom: 0; }
+.result-card .rc { background: #0e141d; border: 1px solid #1a2330; }
+.result-card .rc.win { background: #12261c; border-color: #1f5138; }
+.result-card .rc .pos { font-weight: 700; color: #8fa6bd; text-align: center; }
+.result-card .rc.win .pos { color: #ffe6b0; }
+.result-card .rc .no {
+  font-family: ui-monospace, monospace; text-align: center; color: #cfe1f5;
+  background: #16202b; border-radius: 4px; padding: 1px 0;
+}
+.result-card .rc .nm { color: #e6eef7; font-weight: 600; }
+.result-card .rc .jk, .result-card .rc .mg { color: #8fa6bd; }
+.result-card .rc .od { font-family: ui-monospace, monospace; color: #f5a524; text-align: right; }
+.result-card .dvs { display: flex; flex-wrap: wrap; gap: 14px; margin-top: 10px; font-size: 12px; color: #9fb3c8; }
+.result-card .dvs b { color: #cfe1f5; margin-right: 5px; }
+
 /* ---------- WQQP spectrum ---------- */
 .spec-card { margin-top: 12px; }
 .spec-wrap { overflow: auto; max-height: 420px; }
