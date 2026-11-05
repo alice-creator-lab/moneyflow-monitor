@@ -192,7 +192,7 @@ function renderPills() {
   (state.summary?.meetings || []).forEach((m) => {
     const b = el('button', 'pill' + (m.id === state.mid ? ' on' : ''));
     b.innerHTML = `${m.date.slice(5)} ${m.venue}<span class="v ${phaseCls(m.phase)}">${phaseLabel(m.phase)}</span>`;
-    b.onclick = () => { state.mid = m.id; state.race = null; refresh(); };
+    b.onclick = () => { state.mid = m.id; state.race = null; state.frozen = null; kickLoop(); };
     nav.appendChild(b);
   });
 }
@@ -250,7 +250,7 @@ function renderRaces() {
     const tag = r.phase && r.phase !== 'selling' && r.phase !== 'presale'
       ? `<span class="st ${phaseCls(r.phase)}">${phaseLabel(r.phase)}</span>` : '';
     b.innerHTML = `R${r.no}<span class="t">${hhmm(r.post_time)}</span>${tag}`;
-    b.onclick = () => { state.race = r.no; render(); };
+    b.onclick = () => { state.race = r.no; state.frozen = null; kickLoop(); render(); };
     tabs.appendChild(b);
   });
 }
@@ -693,20 +693,32 @@ const refreshMs = () => {
   if (s <= 900) return 4000;
   return 12000;
 };
+const loopTick = async () => {
+  await refresh();
+  const ms = refreshMs();
+  if (ms === null) {
+    state.timer = null;
+    $('#boot').textContent = '賽果已鎖定 · 停止更新（切換場次會重新開始）';
+    return;
+  }
+  state.timer = setTimeout(loopTick, ms);
+};
+
+function kickLoop(delay = 0) {
+  if (STATIC) return;
+  clearTimeout(state.timer);
+  state.timer = setTimeout(loopTick, delay);
+}
+
 if (!STATIC) {
-  const loop = async () => {
-    await refresh();
-    const ms = refreshMs();
-    if (ms === null) {
-      $('#boot').textContent = '賽果已鎖定 · 停止更新（切換場次會重新開始）';
-      return;
-    }
-    state.timer = setTimeout(loop, ms);
-  };
-  state.timer = setTimeout(loop, 1000);
+  state.timer = setTimeout(loopTick, 1000);
 } else {
   // snapshot build: pull the newest data.js (cache-busted) instead of reloading the page
   const snapLoop = async () => {
+    if (state.frozen === raceKey() && state.meeting?.phase === 'finished') {
+      $('#boot').textContent = '賽果已鎖定 · 快照停止更新（切換場次會重新開始）';
+      return;
+    }
     await staticRefresh();
     const race = currentRace();
     const left = race?.post_time ? secs(race.post_time) : null;
