@@ -122,6 +122,8 @@ async function refresh() {
       state.meeting = await api('api/meeting/' + encodeURIComponent(state.mid));
       const races = state.meeting.races || [];
       const cur = state.meeting.cur_race || 0;
+      const wantRace = parseInt(new URLSearchParams(location.search).get('r') || '0', 10);
+      if (!state.race && wantRace) state.race = wantRace;
       if (!state.race || !races.some((r) => r.no === state.race)) {
         state.race = races.some((r) => r.no === cur) ? cur : (races[0] ? races[0].no : null);
       }
