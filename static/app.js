@@ -686,6 +686,8 @@ const refreshMs = () => {
   const s = secsToPost();
   if (s === null) return 15000;
   if (s <= 40) return 1500;
+  // a finished meeting whose race is frozen needs no polling at all
+  if (state.frozen === raceKey() && state.meeting?.phase === 'finished') return null;
   if (s <= 70) return 1000;     // last minute: refresh every second
   if (s <= 300) return 2000;
   if (s <= 900) return 4000;
@@ -694,7 +696,12 @@ const refreshMs = () => {
 if (!STATIC) {
   const loop = async () => {
     await refresh();
-    state.timer = setTimeout(loop, refreshMs());
+    const ms = refreshMs();
+    if (ms === null) {
+      $('#boot').textContent = '賽果已鎖定 · 停止更新（切換場次會重新開始）';
+      return;
+    }
+    state.timer = setTimeout(loop, ms);
   };
   state.timer = setTimeout(loop, 1000);
 } else {
