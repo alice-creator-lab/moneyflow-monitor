@@ -154,19 +154,20 @@ function render() {
   }
   if (raceDone(race)) state.frozen = raceKey(); else state.frozen = null;
 
-  renderHealth();
-  renderPills();
-  renderCards();
-  renderRaces();
-  renderResult();
-  renderChart();
-  renderDist();
-  renderBasics();
-  renderBlocks();
-  renderSpectrum();
-  renderHot();
-  renderPools();
-  renderRunners();
+  const safe = (fn) => { try { fn(); } catch (e) { console.error(fn.name, e); } };
+  safe(renderHealth);
+  safe(renderPills);
+  safe(renderCards);
+  safe(renderRaces);
+  safe(renderResult);
+  safe(renderChart);
+  safe(renderDist);
+  safe(renderBasics);
+  safe(renderBlocks);
+  safe(renderSpectrum);
+  safe(renderHot);
+  safe(renderPools);
+  safe(renderRunners);
   $('#boot').textContent = STATIC
     ? '靜態快照 · GitHub Pages · 每 30–120 秒自動重新拉取'
     : `即時連線 · ${new Date().toLocaleTimeString('zh-HK', { hour12: false })} · 最後一分鐘每 1 秒更新`;
@@ -603,7 +604,7 @@ function renderResult() {
       <span class="no">${r.no}</span>
       <span class="nm">${r.name}</span>
       <span class="jk">${r.jockey || ''}</span>
-      <span class="od">${r.odds ? r.odds.toFixed(1) : '—'}</span>
+      <span class="od">${Number.isFinite(Number(r.odds)) && Number(r.odds) > 0 ? Number(r.odds).toFixed(1) : '—'}</span>
       <span class="mg">${i === 0 ? '—' : (r.dist || '')}</span>
     </div>`).join('');
 
