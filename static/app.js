@@ -683,11 +683,11 @@ const secsToPost = () => {
 };
 const refreshMs = () => {
   if (STATIC) return 0;
+  // a finished meeting whose race is already frozen needs no polling at all
+  if (state.frozen === raceKey() && state.meeting?.phase === 'finished') return null;
   const s = secsToPost();
   if (s === null) return 15000;
   if (s <= 40) return 1500;
-  // a finished meeting whose race is frozen needs no polling at all
-  if (state.frozen === raceKey() && state.meeting?.phase === 'finished') return null;
   if (s <= 70) return 1000;     // last minute: refresh every second
   if (s <= 300) return 2000;
   if (s <= 900) return 4000;
