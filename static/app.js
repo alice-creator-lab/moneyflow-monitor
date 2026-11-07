@@ -463,7 +463,7 @@ function renderDist() {
       `獨贏資金 ${money(h.stake)}（佔池 ${h.share}%）\n` +
       BANDS.map(([k, , label]) => `${label}：${money(h[k] || 0)}`).join('\n') +
       `\n對比 5 分鐘前 ${dp === null ? '—' : (dp >= 0 ? '+' : '') + dp + '%'}（份額 ${h.share_prev ?? '—'}% → ${h.share}%）` +
-      `\n最近 3 分鐘 +${money(h.d3 || 0)}（+${h.d3_pct ?? 0}%） · 最近 1 分鐘 +${money(h.d1 || 0)}（+${h.d1_pct ?? 0}%）`;
+      `\n最近 3 分鐘 ${h.d3 == null ? '—' : `+${money(h.d3)}（+${h.d3_pct}%）`} · 最近 1 分鐘 ${h.d1 == null ? '—' : `+${money(h.d1)}（+${h.d1_pct}%）`}`;
     box.appendChild(col);
   });
 }
@@ -506,9 +506,11 @@ function renderDistNotes(w) {
   } else {
     bits.push('<span>隔夜飛：未捕捉（賽日 09:00 前會自動記一次基準）</span>');
   }
-  const lastMin = w.bands?.last1 || 0;
-  const last3 = w.bands?.last3 || 0;
-  bits.push(`<span>最近 3 分鐘 +${big(last3)} · 最近 1 分鐘 +${big(lastMin)}（最後 20 秒 +${big(w.bands?.tail || 0)}）</span>`);
+  const last3 = w.bands?.last3;
+  const last1 = w.bands?.last1;
+  const w3 = last3 == null ? '—' : `+${big(last3)}`;
+  const w1 = last1 == null ? '—' : `+${big(last1)}`;
+  bits.push(`<span>最近 3 分鐘 ${w3} · 最近 1 分鐘 ${w1}（最後 20 秒 +${big(w.bands?.tail || 0)}）</span>`);
   bits.push('<span>' + BANDS.map(([, c, label]) =>
     `<i style="display:inline-block;width:9px;height:9px;background:${c};border-radius:2px"></i> ${label}`).join(' · ') +
     ' · Δ% = 對比 5 分鐘前</span>');
