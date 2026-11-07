@@ -458,7 +458,8 @@ function renderDist() {
     col.title = `${h.no} ${race.runners?.find((x) => x.no === h.no)?.name || ''}\n` +
       `獨贏資金 ${money(h.stake)}（佔池 ${h.share}%）\n` +
       BANDS.map(([k, , label]) => `${label}：${money(h[k] || 0)}`).join('\n') +
-      `\n對比 5 分鐘前 ${dp === null ? '—' : (dp >= 0 ? '+' : '') + dp + '%'}（份額 ${h.share_prev ?? '—'}% → ${h.share}%）`;
+      `\n對比 5 分鐘前 ${dp === null ? '—' : (dp >= 0 ? '+' : '') + dp + '%'}（份額 ${h.share_prev ?? '—'}% → ${h.share}%）` +
+      `\n最近 3 分鐘 +${money(h.d3 || 0)}（+${h.d3_pct ?? 0}%） · 最近 1 分鐘 +${money(h.d1 || 0)}（+${h.d1_pct ?? 0}%）`;
     box.appendChild(col);
   });
 }
