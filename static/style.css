@@ -49,11 +49,13 @@ h1, h2, h3 { margin: 0; font-weight: 600; }
 /* ---------- layout ---------- */
 main { max-width: 1560px; margin: 0 auto; padding: 18px 22px 40px; }
 
-.cards { display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px; }
+.cards { display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; }
 .card { background: var(--panel); border: 1px solid var(--line); border-radius: 12px; padding: 14px; }
-.stat .k { font-size: 11.5px; color: var(--dim); letter-spacing: .06em; }
-.stat .v { font-size: 26px; font-weight: 650; margin-top: 6px; font-variant-numeric: tabular-nums; }
-.stat .s { font-size: 11.5px; color: var(--muted); margin-top: 4px; }
+/* the four header stats are context only - keep them small so the bars get the space */
+.cards .stat { padding: 7px 10px; border-radius: 9px; }
+.stat .k { font-size: 10px; color: var(--dim); letter-spacing: .06em; }
+.stat .v { font-size: 16px; font-weight: 650; margin-top: 2px; font-variant-numeric: tabular-nums; }
+.stat .s { font-size: 10.5px; color: var(--muted); margin-top: 1px; }
 .stat .v.up { color: var(--up); }
 .stat .v.gold { color: var(--gold); }
 

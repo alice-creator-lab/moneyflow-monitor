@@ -80,7 +80,7 @@ async function staticRefresh() {
 // one vocabulary for state, because HKJC keeps status=DEFINED while a meeting is already selling
 const PHASE_LABEL = {
   presale: '未開售', selling: '開售中', racing: '賽事進行中',
-  finished: '已完結', imminent: '最後衝刺', jumped: '已開跑',
+  finished: '完咗', imminent: '最後衝刺', jumped: '已開跑',
 };
 const phaseLabel = (p) => PHASE_LABEL[p] || '—';
 const phaseCls = (p) => ({ selling: 'gold', racing: 'up', imminent: 'up', finished: 'muted', jumped: 'muted' }[p] || '');
