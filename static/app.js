@@ -190,14 +190,18 @@ function renderHealth() {
 }
 
 function renderPills() {
-  const nav = $('#meetings');
-  nav.innerHTML = '';
-  (state.summary?.meetings || []).forEach((m) => {
-    const b = el('button', 'pill' + (m.id === state.mid ? ' on' : ''));
-    b.innerHTML = `${m.date.slice(5)} ${m.venue}<span class="v ${phaseCls(m.phase)}">${phaseLabel(m.phase)}</span>`;
-    b.onclick = () => { state.mid = m.id; state.race = null; state.frozen = null; kickLoop(); };
-    nav.appendChild(b);
-  });
+  const sel = $('#meetings');
+  if (!sel) return;
+  const list = state.summary?.meetings || [];
+  sel.innerHTML = list.map((m) =>
+    `<option value="${m.id}"${m.id === state.mid ? ' selected' : ''}>` +
+    `${m.date.slice(5)} ${m.venue} · ${phaseLabel(m.phase)}</option>`).join('');
+  sel.onchange = () => {
+    state.mid = sel.value;
+    state.race = null;
+    state.frozen = null;
+    kickLoop();
+  };
 }
 
 function renderCards() {
