@@ -483,6 +483,15 @@ function renderDistNotes(w) {
   if (jump && jump.delta_pct > 0) {
     bits.push(`<span>5 分鐘最大升幅：<b>${jump.no} 號 +${jump.delta_pct.toFixed(1)}%</b></span>`);
   }
+  const top = (k) => [...w.horses].filter((h) => (h[k] || 0) > 0).sort((x, y) => y[k] - x[k])[0];
+  const j3 = top('d3');
+  const j1 = top('d1');
+  bits.push(j3
+    ? `<span>最近 3 分鐘最大升幅：<b>${j3.no} 號 +${big(j3.d3)}（+${j3.d3_pct}%）</b></span>`
+    : '<span>最近 3 分鐘最大升幅：—</span>');
+  bits.push(j1
+    ? `<span>最近 1 分鐘最大升幅：<b>${j1.no} 號 +${big(j1.d1)}（+${j1.d1_pct}%）</b></span>`
+    : '<span>最近 1 分鐘最大升幅：—</span>');
   const race = currentRace();
   const ov = race?.overnight;
   if (ov) {
@@ -492,9 +501,9 @@ function renderDistNotes(w) {
   } else {
     bits.push('<span>隔夜飛：未捕捉（賽日 09:00 前會自動記一次基準）</span>');
   }
-  const lastMin = (w.bands ? w.bands.s40m1 + w.bands.s20_40 + w.bands.tail : 0);
-  const last3 = (w.bands ? w.bands.m31 + lastMin : 0);
-  bits.push(`<span>最後 3 分鐘 +${big(last3)} · 最後 1 分鐘 +${big(lastMin)}（其中 20 秒 +${big(w.bands?.tail || 0)}）</span>`);
+  const lastMin = w.bands?.last1 || 0;
+  const last3 = w.bands?.last3 || 0;
+  bits.push(`<span>最近 3 分鐘 +${big(last3)} · 最近 1 分鐘 +${big(lastMin)}（最後 20 秒 +${big(w.bands?.tail || 0)}）</span>`);
   bits.push('<span>' + BANDS.map(([, c, label]) =>
     `<i style="display:inline-block;width:9px;height:9px;background:${c};border-radius:2px"></i> ${label}`).join(' · ') +
     ' · Δ% = 對比 5 分鐘前</span>');
