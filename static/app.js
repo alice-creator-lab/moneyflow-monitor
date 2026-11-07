@@ -327,7 +327,7 @@ function renderBasics() {
   const meta = $('#basics-meta');
   if (!tbody) return;
   const rs = (race?.runners || []).slice().sort((a, b) => a.no - b.no);
-  if (!rs.length) { tbody.innerHTML = '<tr><td colspan="10" class="empty">未有排位</td></tr>'; return; }
+  if (!rs.length) { tbody.innerHTML = '<tr><td colspan="11" class="empty">未有排位</td></tr>'; return; }
   const weights = rs.map((r) => r.weight || 0).filter(Boolean);
   const maxW = Math.max(...weights, 0);
   const heavyUnique = weights.filter((w) => w === maxW).length === 1;
@@ -350,6 +350,7 @@ function renderBasics() {
     if (f.delta_pct >= 8) tags.push('<span class="tag up">5分鐘 +' + f.delta_pct.toFixed(0) + '%</span>');
     return `<tr>
       <td class="muted">${r.no}</td>
+      <td class="sig">${tags.join(' ') || '<span class="muted">—</span>'}</td>
       <td>${r.name || ''}<span class="muted">${r.name_en ? ' · ' + r.name_en.slice(0, 18) : ''}</span></td>
       <td class="num">${r.draw ?? '—'}</td>
       <td class="num">${r.weight ?? '—'}${heavyUnique && r.weight === maxW ? '<span class="muted">*</span>' : ''}</td>
@@ -359,7 +360,6 @@ function renderBasics() {
       <td class="muted">${r.gear || '—'}</td>
       <td class="muted">${r.jockey || ''}</td>
       <td class="muted">${r.trainer || ''}</td>
-      <td>${tags.join(' ') || '<span class="muted">—</span>'}</td>
     </tr>`;
   }).join('');
 }

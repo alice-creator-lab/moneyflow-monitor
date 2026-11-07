@@ -119,6 +119,10 @@ main { max-width: 1560px; margin: 0 auto; padding: 18px 22px 40px; }
 .blk .chip .p { color: var(--dim); }
 
 .basics-card { margin-top: 12px; }
+td.sig { vertical-align: top; white-space: normal; min-width: 46px; }
+td.sig .tag { display: block; width: fit-content; margin: 0 0 3px; white-space: nowrap;
+  font-size: 10px; padding: 1px 5px; }
+td.sig .muted { display: block; }
 .l6 { display: inline-block; min-width: 14px; text-align: center; font-size: 10.5px;
   padding: 0 2px; margin-right: 1px; border-radius: 2px; background: #16202b; color: #9fb4c8; }
 .l6.w { background: #1f5138; color: #b8f0cf; }
