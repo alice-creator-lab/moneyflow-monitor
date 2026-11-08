@@ -130,6 +130,7 @@ td.sig .muted { display: block; }
 td .ls { font-size: 11px; color: #cfe0f0; }
 td .ls2 { font-size: 11px; color: var(--dim); }
 td .l5 { font-size: 10.5px; color: #9fb4c8; }
+td .jk { margin-left: 6px; font-size: 11px; white-space: nowrap; }
 
 .rtab .st { font-size: 9px; padding: 0 3px; border-radius: 2px; margin-left: 3px;
   background: #16202b; color: #8fa6bd; }
@@ -144,7 +145,7 @@ td .l5 { font-size: 10.5px; color: #9fb4c8; }
 /* ---------- race result ---------- */
 .result-card .podium { display: flex; flex-direction: column; gap: 2px; }
 .result-card .rc, .result-card .rc-head {
-  display: grid; grid-template-columns: 34px 44px 1fr 90px 62px 80px;
+  display: grid; grid-template-columns: 34px 44px 1fr 62px 80px;
   align-items: center; gap: 8px; padding: 5px 8px; border-radius: 6px;
   font-size: 13px;
 }
@@ -158,7 +159,8 @@ td .l5 { font-size: 10.5px; color: #9fb4c8; }
   background: #16202b; border-radius: 4px; padding: 1px 0;
 }
 .result-card .rc .nm { color: #e6eef7; font-weight: 600; }
-.result-card .rc .jk, .result-card .rc .mg { color: #8fa6bd; }
+.result-card .rc .nm .jk { margin-left: 7px; font-weight: 400; font-size: 11px; color: #8fa6bd; }
+.result-card .rc .mg { color: #8fa6bd; }
 .result-card .rc .od { font-family: ui-monospace, monospace; color: #f5a524; text-align: right; }
 .result-card .dvs { display: flex; flex-wrap: wrap; gap: 14px; margin-top: 10px; font-size: 12px; color: #9fb3c8; }
 .result-card .dvs b { color: #cfe1f5; margin-right: 5px; }

@@ -327,7 +327,7 @@ function renderBasics() {
   const meta = $('#basics-meta');
   if (!tbody) return;
   const rs = (race?.runners || []).slice().sort((a, b) => a.no - b.no);
-  if (!rs.length) { tbody.innerHTML = '<tr><td colspan="11" class="empty">未有排位</td></tr>'; return; }
+  if (!rs.length) { tbody.innerHTML = '<tr><td colspan="10" class="empty">未有排位</td></tr>'; return; }
   const weights = rs.map((r) => r.weight || 0).filter(Boolean);
   const maxW = Math.max(...weights, 0);
   const heavyUnique = weights.filter((w) => w === maxW).length === 1;
@@ -351,14 +351,13 @@ function renderBasics() {
     return `<tr>
       <td class="muted">${r.no}</td>
       <td class="sig">${tags.join(' ') || '<span class="muted">—</span>'}</td>
-      <td>${r.name || ''}<span class="muted">${r.name_en ? ' · ' + r.name_en.slice(0, 18) : ''}</span></td>
+      <td>${r.name || ''}<span class="muted jk">${r.jockey || ''}</span></td>
       <td class="num">${r.draw ?? '—'}</td>
       <td class="num">${r.weight ?? '—'}${heavyUnique && r.weight === maxW ? '<span class="muted">*</span>' : ''}</td>
       <td class="num">${r.rating ?? '—'}</td>
       <td>${l6html}</td>
       <td>${lastStartCell(r.last_start)}</td>
       <td class="muted">${r.gear || '—'}</td>
-      <td class="muted">${r.jockey || ''}</td>
       <td class="muted">${r.trainer || ''}</td>
     </tr>`;
   }).join('');
@@ -638,8 +637,7 @@ function renderResult() {
   const rows = top.map((r, i) => `<div class="rc${i === 0 ? ' win' : ''}">
       <span class="pos">${r.finish}</span>
       <span class="no">${r.no}</span>
-      <span class="nm">${r.name}</span>
-      <span class="jk">${r.jockey || ''}</span>
+      <span class="nm">${r.name}<span class="jk">${r.jockey || ''}</span></span>
       <span class="od">${Number.isFinite(Number(r.odds)) && Number(r.odds) > 0 ? Number(r.odds).toFixed(1) : '—'}</span>
       <span class="mg">${i === 0 ? '—' : (r.dist || '')}</span>
     </div>`).join('');
@@ -653,7 +651,7 @@ function renderResult() {
     .join('');
 
   const head = '<div class="rc-head"><span>名</span><span>馬號</span><span>馬名</span>' +
-    '<span>騎師</span><span>開跑</span><span>距離</span></div>';
+    '<span>開跑</span><span>距離</span></div>';
   $('#result-body').innerHTML = `<div class="podium">${head}${rows}</div>` +
     (line ? `<div class="dvs">${line}</div>` : '');
 }
@@ -676,8 +674,7 @@ function renderRunners() {
     const tr = el('tr');
     tr.innerHTML = `
       <td class="muted">${r.no}</td>
-      <td>${r.name || ''}${r.hot ? ' <span class="tag">熱</span>' : ''}<span class="muted">${r.draw ? ` (${r.draw}檔)` : ''}</span></td>
-      <td class="muted">${r.jockey || ''}</td>
+      <td>${r.name || ''}${r.hot ? ' <span class="tag">熱</span>' : ''}<span class="muted">${r.draw ? ` (${r.draw}檔)` : ''}</span><span class="muted jk">${r.jockey || ''}</span></td>
       <td class="num">${r.odds ? r.odds.toFixed(1) : '—'}</td>
       <td class="num muted">${r.pla ? r.pla.toFixed(1) : '—'}</td>
       <td class="num">${dv === null || dv === 0 ? '' : `<span class="${dv < 0 ? 'up' : 'down'}">${dv > 0 ? '+' : ''}${dv.toFixed(1)}</span>`}</td>
@@ -702,7 +699,7 @@ function ovCell(r) {
 document.querySelectorAll('#runners th').forEach((th, i) => {
   th.style.cursor = 'pointer';
   th.onclick = () => {
-    const map = { 0: 'no', 3: 'odds', 8: 'stake' };
+    const map = { 0: 'no', 2: 'odds', 7: 'stake' };
     if (map[i]) { state.sort = map[i]; renderRunners(); }
   };
 });
