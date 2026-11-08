@@ -165,6 +165,15 @@ td .jk { margin-left: 6px; font-size: 11px; white-space: nowrap; }
 .result-card .dvs { display: flex; flex-wrap: wrap; gap: 14px; margin-top: 10px; font-size: 12px; color: #9fb3c8; }
 .result-card .dvs b { color: #cfe1f5; margin-right: 5px; }
 
+/* phones: 5 fixed columns squeeze the name cell to ~40 px and the horse name wraps
+   character by character, so drop 距離 (the least actionable column) below 560 px */
+@media (max-width: 560px) {
+  .result-card .rc, .result-card .rc-head {
+    grid-template-columns: 26px 34px minmax(0, 1fr) 52px; gap: 6px; padding: 5px 6px;
+  }
+  .result-card .rc .mg, .result-card .rc-head span:nth-child(5) { display: none; }
+}
+
 /* ---------- WQQP spectrum ---------- */
 .spec-card { margin-top: 12px; }
 .spec-wrap { overflow: auto; max-height: 420px; }
